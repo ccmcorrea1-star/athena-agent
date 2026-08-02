@@ -22,12 +22,12 @@
  *   toggled the tool output open (via ctrl+e or clicking)
  *
  * Usage:
- *   pi -e ./built-in-tool-renderer.ts
+ *   athena -e ./built-in-tool-renderer.ts
  */
 
-import type { BashToolDetails, EditToolDetails, ExtensionAPI, ReadToolDetails } from "@earendil-works/pi-coding-agent";
-import { createBashTool, createEditTool, createReadTool, createWriteTool } from "@earendil-works/pi-coding-agent";
-import { Text } from "@earendil-works/pi-tui";
+import type { BashToolDetails, EditToolDetails, ExtensionAPI, ReadToolDetails } from "@athena/coding-agent";
+import { createBashTool, createEditTool, createReadTool, createWriteTool } from "@athena/coding-agent";
+import { Text } from "@athena/tui";
 
 export default function (pi: ExtensionAPI) {
 	const cwd = process.cwd();

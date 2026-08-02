@@ -1,22 +1,22 @@
-import { PiServer } from "../server.ts";
-import type { PiServerOptions, PiSessionBackend } from "../types.ts";
+import { AthenaServer } from "../server.ts";
+import type { AthenaServerOptions, AthenaSessionBackend } from "../types.ts";
 import { TEST_TOKEN, TestSessionBackend } from "./backend.ts";
 
-export interface TestServerOptions extends Omit<PiServerOptions, "token"> {
+export interface TestServerOptions extends Omit<AthenaServerOptions, "token"> {
 	token?: string;
-	backend?: PiSessionBackend;
+	backend?: AthenaSessionBackend;
 }
 
 export interface TestServer {
-	server: PiServer;
-	backend: PiSessionBackend;
+	server: AthenaServer;
+	backend: AthenaSessionBackend;
 }
 
-/** Create an unstarted PiServer with deterministic defaults for transport conformance tests. */
+/** Create an unstarted AthenaServer with deterministic defaults for transport conformance tests. */
 export function createTestServer(options: TestServerOptions): TestServer {
 	const backend = options.backend ?? new TestSessionBackend();
 	return {
-		server: new PiServer(backend, {
+		server: new AthenaServer(backend, {
 			token: options.token ?? TEST_TOKEN,
 			listeners: options.listeners,
 			maxFrameLength: options.maxFrameLength,

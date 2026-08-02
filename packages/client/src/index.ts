@@ -1,18 +1,18 @@
-export { PiClient } from "./client.ts";
+export { AthenaClient } from "./client.ts";
 export {
-	PiClientDisposedError,
-	PiDisconnectedError,
-	PiServerError,
-	PiSessionDetachedError,
-	PiSessionOwnershipError,
+	AthenaClientDisposedError,
+	AthenaDisconnectedError,
+	AthenaServerError,
+	AthenaSessionDetachedError,
+	AthenaSessionOwnershipError,
 } from "./errors.ts";
-export type { AcquireSessionOptions, PiSessionHandle, SessionLease, SessionLeaseMode } from "./session-handle.ts";
+export type { AcquireSessionOptions, AthenaSessionHandle, SessionLease, SessionLeaseMode } from "./session-handle.ts";
 export type { ByteTransport, ByteTransportFactory, ByteTransportHandlers } from "./transport.ts";
 export type {
+	AthenaClientOptions,
 	ConnectionState,
 	ConnectionStateChange,
 	CreateSessionOptions,
 	ListenerErrorHandler,
-	PiClientOptions,
 	Unsubscribe,
 } from "./types.ts";

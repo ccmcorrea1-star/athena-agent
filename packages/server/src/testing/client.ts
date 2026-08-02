@@ -8,7 +8,7 @@ import {
 	type ResponseEnvelope,
 	type ServerMessage,
 	ServerMessageDecoder,
-} from "@earendil-works/pi-protocol";
+} from "@athena/protocol";
 import { Deferred, TEST_TOKEN } from "./backend.ts";
 
 interface MessageWaiter {

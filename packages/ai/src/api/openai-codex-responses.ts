@@ -6,6 +6,7 @@ import type {
 	ResponseInput,
 	ResponseStreamEvent,
 } from "openai/resources/responses/responses.js";
+import { sleep } from "../utils/sleep.ts";
 
 type ProcessWithOsBuiltinModule = typeof process & {
 	getBuiltinModule?: (id: "node:os") => typeof NodeOs;
@@ -180,20 +181,6 @@ function validateRetryDelayMs(delayMs: number, options?: StreamOptions): number 
 		);
 	}
 	return delayMs;
-}
-
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-	return new Promise((resolve, reject) => {
-		if (signal?.aborted) {
-			reject(new Error("Request was aborted"));
-			return;
-		}
-		const timeout = setTimeout(resolve, ms);
-		signal?.addEventListener("abort", () => {
-			clearTimeout(timeout);
-			reject(new Error("Request was aborted"));
-		});
-	});
 }
 
 function normalizeTimeoutMs(value: number | undefined): number | undefined {

@@ -3,17 +3,17 @@
  *
  * Demonstrates the project_trust event. Install globally or pass via -e:
  *
- *   mkdir -p ~/.pi/agent/extensions
- *   cp packages/coding-agent/examples/extensions/project-trust.ts ~/.pi/agent/extensions/
+ *   mkdir -p ~/.athena/agent/extensions
+ *   cp packages/coding-agent/examples/extensions/project-trust.ts ~/.athena/agent/extensions/
  *
  * Or:
  *
- *   pi -e packages/coding-agent/examples/extensions/project-trust.ts
+ *   athena -e packages/coding-agent/examples/extensions/project-trust.ts
  *
- * Try it in a project containing .pi, AGENTS.md/CLAUDE.md, or .agents/skills.
+ * Try it in a project containing .athena, AGENTS.md/CLAUDE.md, or .agents/skills.
  */
 
-import type { ExtensionAPI, ProjectTrustEventResult } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ProjectTrustEventResult } from "@athena/coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	let loadCount = 0;

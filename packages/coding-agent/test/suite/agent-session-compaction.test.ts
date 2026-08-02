@@ -1,9 +1,4 @@
-import {
-	type AssistantMessage,
-	createAssistantMessageEventStream,
-	fauxAssistantMessage,
-	type Model,
-} from "@earendil-works/pi-ai";
+import { type AssistantMessage, createAssistantMessageEventStream, fauxAssistantMessage, type Model } from "@athena/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { estimateTokens } from "../../src/core/compaction/index.ts";
 import { createHarness, type Harness } from "./harness.ts";

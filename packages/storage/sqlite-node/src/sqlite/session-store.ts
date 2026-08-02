@@ -1,15 +1,10 @@
-import type {
-	SessionForkSelection,
-	SessionReader,
-	SessionStore,
-	SessionTreeEntry,
-} from "@earendil-works/pi-agent-core";
+import type { SessionForkSelection, SessionReader, SessionStore, SessionTreeEntry } from "@athena/agent-core";
 import {
 	createSessionId,
 	getFileSystemResultOrThrow,
 	readSessionEntriesForFork,
 	SessionError,
-} from "@earendil-works/pi-agent-core";
+} from "@athena/agent-core";
 import { applyMigrations } from "./migrations.ts";
 import { SqliteSessionConnection } from "./storage/index.ts";
 import { rowToMetadata, type SessionRow } from "./storage/sessions.ts";

@@ -22,9 +22,9 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: [
-			{ find: /^@earendil-works\/pi-agent-core$/, replacement: agentSrcIndex },
-			{ find: /^@earendil-works\/pi-ai$/, replacement: aiSrcIndex },
-			{ find: /^@earendil-works\/pi-ai\/compat$/, replacement: aiSrcCompat },
+			{ find: /^@athena\/agent$/, replacement: agentSrcIndex },
+			{ find: /^@athena\/ai$/, replacement: aiSrcIndex },
+			{ find: /^@athena\/ai\/compat$/, replacement: aiSrcCompat },
 		],
 	},
 });

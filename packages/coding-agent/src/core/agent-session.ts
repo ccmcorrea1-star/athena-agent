@@ -23,8 +23,7 @@ import type {
 	AgentTool,
 	PrepareNextTurnContext,
 	ThinkingLevel,
-} from "@earendil-works/pi-agent-core";
-import { contentText } from "@earendil-works/pi-ai";
+} from "@athena/agent-core";
 import type {
 	AssistantMessage,
 	AuthResult,
@@ -33,18 +32,18 @@ import type {
 	ProviderHeaders,
 	TextContent,
 	Usage,
-} from "@earendil-works/pi-ai/compat";
+} from "@athena/ai";
 import {
 	clampThinkingLevel,
 	cleanupSessionResources,
+	contentText,
 	getSupportedThinkingLevels,
 	isContextOverflow,
 	isRetryableAssistantError,
 	modelsAreEqual,
 	type RetryCallbacks,
-	resetApiProviders,
-	streamSimple,
-} from "@earendil-works/pi-ai/compat";
+} from "@athena/ai";
+import { resetApiProviders, streamSimple } from "@athena/ai/compat";
 import { getThemeByName, theme } from "../modes/interactive/theme/theme.ts";
 import { stripFrontmatter } from "../utils/frontmatter.ts";
 import { resolvePath } from "../utils/paths.ts";
@@ -107,6 +106,7 @@ import { type BashOperations, createLocalBashOperations } from "./tools/bash.ts"
 import { createAllToolDefinitions } from "./tools/index.ts";
 import { createToolDefinitionFromAgentTool } from "./tools/tool-definition-wrapper.ts";
 import { addUsageToTotals, createUsageTotals } from "./usage-totals.ts";
+import { WEB_TOOL_NAMES } from "./web/index.ts";
 
 // ============================================================================
 // Skill Block Parsing
@@ -1040,6 +1040,7 @@ export class AgentSession {
 			loaderAppendSystemPrompt.length > 0 ? loaderAppendSystemPrompt.join("\n\n") : undefined;
 		const loadedSkills = this._resourceLoader.getSkills().skills;
 		const loadedContextFiles = this._resourceLoader.getAgentsFiles().agentsFiles;
+		const webSkillIndex = this._resourceLoader.getWebSkillRegistry?.().getSkillIndexPrompt();
 
 		this._baseSystemPromptOptions = {
 			cwd: this._cwd,
@@ -1050,6 +1051,7 @@ export class AgentSession {
 			selectedTools: validToolNames,
 			toolSnippets,
 			promptGuidelines,
+			webSkillIndex,
 		};
 		return buildSystemPrompt(this._baseSystemPromptOptions);
 	}
@@ -2560,10 +2562,21 @@ export class AgentSession {
 						createToolDefinitionFromAgentTool(tool),
 					]),
 				)
-			: createAllToolDefinitions(this._cwd, {
-					read: { autoResizeImages },
-					bash: { commandPrefix: shellCommandPrefix, shellPath },
-				});
+			: {
+					...createAllToolDefinitions(this._cwd, {
+						read: { autoResizeImages },
+						bash: { commandPrefix: shellCommandPrefix, shellPath },
+					}),
+					...Object.fromEntries(
+						(
+							this._resourceLoader
+								.getWebSkillRegistry?.()
+								?.createToolDefinitions(
+									WEB_TOOL_NAMES.filter((name) => options.activeToolNames?.includes(name)),
+								) ?? []
+						).map((definition) => [definition.name, definition]),
+					),
+				};
 
 		this._baseToolDefinitions = new Map(
 			Object.entries(baseToolDefinitions).map(([name, tool]) => [name, tool as ToolDefinition]),

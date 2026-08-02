@@ -13,7 +13,6 @@ import type {
 	AssistantMessage,
 	Context,
 	Model,
-	ThinkingLevel as PiThinkingLevel,
 	ProviderEnv,
 	ProviderHeaders,
 	SimpleStreamOptions,
@@ -23,6 +22,7 @@ import type {
 	ThinkingBudgets,
 	ThinkingContent,
 	ToolCall,
+	ThinkingLevel as VertexThinkingLevel,
 } from "../types.ts";
 import { formatProviderError, normalizeProviderError } from "../utils/error-body.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
@@ -505,7 +505,7 @@ function buildParams(
 	return params;
 }
 
-type ClampedThinkingLevel = Exclude<PiThinkingLevel, "xhigh" | "max">;
+type ClampedThinkingLevel = Exclude<VertexThinkingLevel, "xhigh" | "max">;
 
 function isGemini3ProModel(model: Model<"google-generative-ai">): boolean {
 	return /gemini-3(?:\.\d+)?-pro/.test(model.id.toLowerCase());

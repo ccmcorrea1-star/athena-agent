@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { streamSimple as streamAnthropic } from "../src/api/anthropic-messages.ts";
+import { streamSimple as streamPiMessages } from "../src/api/athena-messages.ts";
 import { streamSimple as streamAzureOpenAIResponses } from "../src/api/azure-openai-responses.ts";
 import { streamSimple as streamGoogleGenerativeAI } from "../src/api/google-generative-ai.ts";
 import { streamSimple as streamGoogleVertex } from "../src/api/google-vertex.ts";
@@ -8,7 +9,6 @@ import { streamSimple as streamOpenAICodexResponses } from "../src/api/openai-co
 import { streamSimple as streamOpenAICompletions } from "../src/api/openai-completions.ts";
 import { streamSimple as streamOpenAIResponses } from "../src/api/openai-responses.ts";
 import { generateImages } from "../src/api/openrouter-images.ts";
-import { streamSimple as streamPiMessages } from "../src/api/pi-messages.ts";
 import type { Api, Context, FetchFunction, ImagesModel, Model } from "../src/types.ts";
 
 const context: Context = {

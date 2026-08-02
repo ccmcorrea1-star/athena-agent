@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	checkForNewPiVersion,
+	checkForNewVersion,
 	comparePackageVersions,
-	getLatestPiRelease,
-	getLatestPiVersion,
+	getLatestRelease,
+	getLatestVersion,
 	isNewerPackageVersion,
 } from "../src/utils/version-check.ts";
 import { allowNetwork } from "./test-network-env.ts";
 
-const originalSkipVersionCheck = process.env.PI_SKIP_VERSION_CHECK;
+const originalSkipVersionCheck = process.env.ATHENA_SKIP_VERSION_CHECK;
 
 beforeEach(() => {
 	allowNetwork();
@@ -17,9 +17,9 @@ beforeEach(() => {
 afterEach(() => {
 	vi.unstubAllGlobals();
 	if (originalSkipVersionCheck === undefined) {
-		delete process.env.PI_SKIP_VERSION_CHECK;
+		delete process.env.ATHENA_SKIP_VERSION_CHECK;
 	} else {
-		process.env.PI_SKIP_VERSION_CHECK = originalSkipVersionCheck;
+		process.env.ATHENA_SKIP_VERSION_CHECK = originalSkipVersionCheck;
 	}
 });
 
@@ -37,20 +37,20 @@ describe("version checks", () => {
 		const fetchMock = vi.fn(async () => Response.json({ version: "1.2.3" }));
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(checkForNewPiVersion("1.2.3")).resolves.toBeUndefined();
-		await expect(checkForNewPiVersion("1.2.2")).resolves.toEqual({ version: "1.2.3" });
+		await expect(checkForNewVersion("1.2.3")).resolves.toBeUndefined();
+		await expect(checkForNewVersion("1.2.2")).resolves.toEqual({ version: "1.2.3" });
 	});
 
-	it("uses the pi.dev version check api with a pi user agent", async () => {
+	it("uses the athena.dev version check api with an athena user agent", async () => {
 		const fetchMock = vi.fn(async () => Response.json({ version: "1.2.4" }));
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(getLatestPiVersion("1.2.3")).resolves.toBe("1.2.4");
+		await expect(getLatestVersion("1.2.3")).resolves.toBe("1.2.4");
 		expect(fetchMock).toHaveBeenCalledWith(
-			"https://pi.dev/api/latest-version",
+			"https://athena.dev/api/latest-version",
 			expect.objectContaining({
 				headers: expect.objectContaining({
-					"User-Agent": expect.stringMatching(/^pi\/1\.2\.3 /),
+					"User-Agent": expect.stringMatching(/^athena\/1\.2\.3 /),
 					accept: "application/json",
 				}),
 			}),
@@ -60,14 +60,14 @@ describe("version checks", () => {
 	it("returns the active package metadata from the version check api", async () => {
 		const fetchMock = vi.fn(async () =>
 			Response.json({
-				packageName: "@new-scope/pi",
+				packageName: "@new-scope/athena",
 				version: "1.2.4",
 			}),
 		);
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(getLatestPiRelease("1.2.3")).resolves.toEqual({
-			packageName: "@new-scope/pi",
+		await expect(getLatestRelease("1.2.3")).resolves.toEqual({
+			packageName: "@new-scope/athena",
 			version: "1.2.4",
 		});
 	});
@@ -76,24 +76,24 @@ describe("version checks", () => {
 		const fetchMock = vi.fn(async () => Response.json({ note: " **Read this** ", version: "1.2.4" }));
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(getLatestPiRelease("1.2.3")).resolves.toEqual({ note: "**Read this**", version: "1.2.4" });
+		await expect(getLatestRelease("1.2.3")).resolves.toEqual({ note: "**Read this**", version: "1.2.4" });
 	});
 
 	it("skips automatic api calls when version checks are disabled", async () => {
-		process.env.PI_SKIP_VERSION_CHECK = "1";
+		process.env.ATHENA_SKIP_VERSION_CHECK = "1";
 		const fetchMock = vi.fn();
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(checkForNewPiVersion("1.2.3")).resolves.toBeUndefined();
+		await expect(checkForNewVersion("1.2.3")).resolves.toBeUndefined();
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
 	it("allows direct api calls when automatic version checks are disabled", async () => {
-		process.env.PI_SKIP_VERSION_CHECK = "1";
+		process.env.ATHENA_SKIP_VERSION_CHECK = "1";
 		const fetchMock = vi.fn(async () => Response.json({ version: "1.2.4" }));
 		vi.stubGlobal("fetch", fetchMock);
 
-		await expect(getLatestPiVersion("1.2.3")).resolves.toBe("1.2.4");
+		await expect(getLatestVersion("1.2.3")).resolves.toBe("1.2.4");
 		expect(fetchMock).toHaveBeenCalledOnce();
 	});
 });

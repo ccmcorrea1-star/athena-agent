@@ -1,6 +1,6 @@
-import { PiClient } from "@earendil-works/pi-client";
-import { createAssistantMessageEventStream, Type } from "@earendil-works/pi-ai";
-import { complete, getModel, getProviders, streamSimple } from "@earendil-works/pi-ai/compat";
+import { AthenaClient } from "@athena/client";
+import { createAssistantMessageEventStream, Type } from "@athena/ai";
+import { complete, getModel, getProviders, streamSimple } from "@athena/ai/compat";
 import {
 	Agent,
 	bashExecutionToText,
@@ -18,8 +18,8 @@ import {
 	streamProxy,
 	toError,
 	truncateHead,
-} from "@earendil-works/pi-agent-core";
-import { decodeCbor, encodeCbor, PROTOCOL_VERSION } from "@earendil-works/pi-protocol";
+} from "@athena/agent";
+import { decodeCbor, encodeCbor, PROTOCOL_VERSION } from "@athena/protocol";
 
 // Keep this entry browser-safe. It is bundled by scripts/check-browser-smoke.mjs
 // to catch accidental Node-only runtime imports in browser-facing package exports.
@@ -61,7 +61,7 @@ console.log(
 	new FileError("not_found", "missing").code,
 	toError("boom").message,
 	typeof streamProxy,
-	typeof PiClient,
+	typeof AthenaClient,
 	PROTOCOL_VERSION,
 	decodeCbor(encodeCbor({ browser: true })),
 );

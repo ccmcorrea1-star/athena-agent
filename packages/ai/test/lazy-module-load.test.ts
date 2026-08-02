@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const aiEntryUrl = new URL("../src/index.ts", import.meta.url).href;
-const compatEntryUrl = new URL("../src/compat.ts", import.meta.url).href;
-const providersAllUrl = new URL("../src/providers/all.ts", import.meta.url).href;
+const aiEntryUrl = new URL("../dist/index.js", import.meta.url).href;
+const compatEntryUrl = new URL("../dist/compat.js", import.meta.url).href;
+const providersAllUrl = new URL("../dist/providers/all.js", import.meta.url).href;
 
 const SDK_SPECIFIERS = [
 	"@anthropic-ai/sdk",

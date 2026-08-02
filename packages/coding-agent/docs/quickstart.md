@@ -1,51 +1,51 @@
 # Quickstart
 
-This page gets you from install to a useful first pi session.
+This page gets you from install to a useful first athena session.
 
 ## Install
 
-Pi is distributed as an npm package:
+Athena is distributed as an npm package:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+npm install -g --ignore-scripts @athena/coding-agent
 ```
 
-`--ignore-scripts` disables dependency lifecycle scripts during install. Pi does not require install scripts for normal npm installs.
+`--ignore-scripts` disables dependency lifecycle scripts during install. Athena does not require install scripts for normal npm installs.
 
 ### Uninstall
 
-Use the package manager that installed pi. The curl installer uses npm globally, so curl and npm installs are removed with npm:
+Use the package manager that installed athena. The curl installer uses npm globally, so curl and npm installs are removed with npm:
 
 ```bash
 # curl installer or npm install -g
-npm uninstall -g @earendil-works/pi-coding-agent
+npm uninstall -g @athena/coding-agent
 
 # pnpm
-pnpm remove -g @earendil-works/pi-coding-agent
+pnpm remove -g @athena/coding-agent
 
 # Yarn
-yarn global remove @earendil-works/pi-coding-agent
+yarn global remove @athena/coding-agent
 
 # Bun
-bun uninstall -g @earendil-works/pi-coding-agent
+bun uninstall -g @athena/coding-agent
 ```
 
-Uninstalling pi leaves settings, credentials, sessions, and installed pi packages in `~/.pi/agent/`.
+Uninstalling athena leaves settings, credentials, sessions, and installed athena packages in `~/.athena/agent/`.
 
-Then start pi in the project directory you want it to work on:
+Then start athena in the project directory you want it to work on:
 
 ```bash
 cd /path/to/project
-pi
+athena
 ```
 
 ## Authenticate
 
-Pi can use subscription providers through `/login`, or API-key providers through environment variables or the auth file.
+Athena can use subscription providers through `/login`, or API-key providers through environment variables or the auth file.
 
 ### Option 1: subscription login
 
-Start pi and run:
+Start athena and run:
 
 ```text
 /login
@@ -55,37 +55,37 @@ Then select a provider. Built-in subscription logins include Claude Pro/Max, Cha
 
 ### Option 2: API key
 
-Set an API key before launching pi:
+Set an API key before launching athena:
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-pi
+athena
 ```
 
-You can also run `/login` and select an API-key provider to store the key in `~/.pi/agent/auth.json`.
+You can also run `/login` and select an API-key provider to store the key in `~/.athena/agent/auth.json`.
 
 See [Providers](providers.md) for all supported providers, environment variables, and cloud-provider setup.
 
 ## First session
 
-Once pi starts, type a request and press Enter:
+Once athena starts, type a request and press Enter:
 
 ```text
 Summarize this repository and tell me how to run its checks.
 ```
 
-By default, pi gives the model four tools:
+By default, athena gives the model four tools:
 
 - `read` - read files
 - `write` - create or overwrite files
 - `edit` - patch files
 - `bash` - run shell commands
 
-Additional built-in read-only tools (`grep`, `find`, `ls`) are available through tool options. Pi runs in your current working directory and can modify files there. Use git or another checkpointing workflow if you want easy rollback.
+Additional built-in read-only tools (`grep`, `find`, `ls`) are available through tool options. Athena runs in your current working directory and can modify files there. Use git or another checkpointing workflow if you want easy rollback.
 
-## Give pi project instructions
+## Give athena project instructions
 
-Pi loads context files at startup. Add an `AGENTS.md` file to tell it how to work in a project:
+Athena loads context files at startup. Add an `AGENTS.md` file to tell it how to work in a project:
 
 ```markdown
 # Project Instructions
@@ -95,12 +95,12 @@ Pi loads context files at startup. Add an `AGENTS.md` file to tell it how to wor
 - Keep responses concise.
 ```
 
-Pi loads:
+Athena loads:
 
-- `~/.pi/agent/AGENTS.md` for global instructions
+- `~/.athena/agent/AGENTS.md` for global instructions
 - `AGENTS.md` or `CLAUDE.md` from parent directories and the current directory
 
-Restart pi, or run `/reload`, after changing context files.
+Restart athena, or run `/reload`, after changing context files.
 
 ## Common things to try
 
@@ -109,8 +109,8 @@ Restart pi, or run `/reload`, after changing context files.
 Type `@` in the editor to fuzzy-search files, or pass files on the command line:
 
 ```bash
-pi @README.md "Summarize this"
-pi @src/app.ts @src/app.test.ts "Review these together"
+athena @README.md "Summarize this"
+athena @src/app.ts @src/app.test.ts "Review these together"
 ```
 
 Images or text can be pasted with Ctrl+V (Alt+V on Windows); images can also be dragged into supported terminals.
@@ -134,32 +134,32 @@ Use `/model` or Ctrl+L to choose a model. Use Shift+Tab to cycle thinking level.
 Sessions are saved automatically:
 
 ```bash
-pi -c                  # Continue most recent session
-pi -r                  # Browse previous sessions
-pi --name "my task"    # Set session display name at startup
-pi --session <path|id> # Open a specific session
+athena -c                  # Continue most recent session
+athena -r                  # Browse previous sessions
+athena --name "my task"    # Set session display name at startup
+athena --session <path|id> # Open a specific session
 ```
 
-Inside pi, use `/resume`, `/new`, `/tree`, `/fork`, and `/clone` to manage sessions.
+Inside athena, use `/resume`, `/new`, `/tree`, `/fork`, and `/clone` to manage sessions.
 
 ### Non-interactive mode
 
 For one-shot prompts:
 
 ```bash
-pi -p "Summarize this codebase"
-cat README.md | pi -p "Summarize this text"
-pi -p @screenshot.png "What's in this image?"
+athena -p "Summarize this codebase"
+cat README.md | athena -p "Summarize this text"
+athena -p @screenshot.png "What's in this image?"
 ```
 
 Use `--mode json` for JSON event output or `--mode rpc` for process integration.
 
 ## Next steps
 
-- [Using Pi](usage.md) - interactive mode, slash commands, sessions, context files, and CLI reference.
+- [Using Athena](usage.md) - interactive mode, slash commands, sessions, context files, and CLI reference.
 - [Providers](providers.md) - authentication and model setup.
 - [Settings](settings.md) - global and project configuration.
 - [Keybindings](keybindings.md) - shortcuts and customization.
-- [Pi Packages](packages.md) - install shared extensions, skills, prompts, and themes.
+- [Athena Packages](packages.md) - install shared extensions, skills, prompts, and themes.
 
 Platform notes: [Windows](windows.md), [Termux](termux.md), [tmux](tmux.md), [Terminal setup](terminal-setup.md), [Shell aliases](shell-aliases.md).

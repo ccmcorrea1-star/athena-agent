@@ -1,23 +1,17 @@
 # Development
 
-See [AGENTS.md](https://github.com/earendil-works/pi-mono/blob/main/AGENTS.md) for additional guidelines.
+See [AGENTS.md](../../AGENTS.md) for code quality, git, testing, and release rules.
 
 ## Setup
 
 ```bash
-git clone https://github.com/earendil-works/pi-mono
-cd pi-mono
+git clone https://github.com/earendil-works/athena-agent
+cd athena-agent
 npm install
 npm run build
 ```
 
-Run from source:
-
-```bash
-/path/to/pi-mono/pi-test.sh
-```
-
-The script can be run from any directory. Pi keeps the caller's current working directory.
+Run from source: `./athena-test.sh` from repo root.
 
 ## Forking / Rebranding
 
@@ -26,8 +20,8 @@ Configure via `package.json`:
 ```json
 {
   "piConfig": {
-    "name": "pi",
-    "configDir": ".pi"
+    "name": "athena",
+    "configDir": ".athena"
   }
 }
 ```
@@ -48,24 +42,28 @@ Never use `__dirname` directly for package assets.
 
 ## Debug Command
 
-`/debug` (hidden) writes to `~/.pi/agent/pi-debug.log`:
+`/debug` (hidden) writes to `~/.athena/agent/athena-debug.log`:
 - Rendered TUI lines with ANSI codes
 - Last messages sent to the LLM
-
-## Testing
-
-```bash
-./test.sh                         # Run non-LLM tests (no API keys needed)
-npm test                          # Run all tests
-npm test -- test/specific.test.ts # Run specific test
-```
 
 ## Project Structure
 
 ```
 packages/
-  ai/           # LLM provider abstraction
-  agent/        # Agent loop and message types  
-  tui/          # Terminal UI components
-  coding-agent/ # CLI and interactive mode
+  ai/             # LLM provider abstraction, compat layer, OAuth
+  agent/          # Agent core, harness, compaction, tools
+  tui/            # Terminal UI components (general-purpose)
+  coding-agent/   # CLI, interactive mode, extensions, skills
+  client/         # RPC client
+  server/         # Server-side agent hosting
+  protocol/       # Wire protocol (JSONL session format)
+  evals/          # Evaluation harness
+  storage/        # SQLite session backends
 ```
+
+## Plans
+
+Future architectural work is tracked in `plans/`:
+
+- `plans/T9-interactive-mode-split.md` — Split 6125-line interactive-mode.ts into focused modules
+- `plans/T10-tui-decouple.md` — Decouple TUI from coding-agent types, split extensions/types.ts

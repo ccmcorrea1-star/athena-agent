@@ -1,11 +1,11 @@
 /**
  * Minimal Kimi deferred-tool loading demo.
  *
- *   pi -e ./kimi-deferred-tools.ts
+ *   athena -e ./kimi-deferred-tools.ts
  *    example prompt: Use the available tools to calculate 100 + 500. Do not calculate it yourself.
  */
 
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@athena/coding-agent";
 import { Type } from "typebox";
 
 function calculate(_expr: string): string {

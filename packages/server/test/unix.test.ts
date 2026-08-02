@@ -4,7 +4,7 @@ import { lstat, mkdtemp, readFile, rm, unlink, writeFile } from "node:fs/promise
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import type { PiServer } from "../src/index.ts";
+import type { AthenaServer } from "../src/index.ts";
 import {
 	connectUnixTestClient,
 	type ProtocolTestClient,
@@ -13,7 +13,7 @@ import {
 } from "../src/testing/index.ts";
 import { createUnixServer } from "../src/transports/unix/index.ts";
 
-const servers = new Set<PiServer>();
+const servers = new Set<AthenaServer>();
 const clients = new Set<ProtocolTestClient>();
 const children = new Set<ChildProcess>();
 const tempDirectories = new Set<string>();
@@ -24,7 +24,7 @@ async function makeSocketPath(nested = false): Promise<string> {
 	return nested ? join(directory, "p", "n", "server.sock") : join(directory, "server.sock");
 }
 
-function makeServer(path: string): PiServer {
+function makeServer(path: string): AthenaServer {
 	const server = createUnixServer(new TestSessionBackend(), { token: TEST_TOKEN, path });
 	servers.add(server);
 	return server;

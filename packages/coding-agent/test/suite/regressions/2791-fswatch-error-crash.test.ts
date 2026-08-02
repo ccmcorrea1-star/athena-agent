@@ -1,11 +1,15 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
+
+function tmpdir(): string {
+	return "/tmp";
+}
+
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 /**
- * Regression test for https://github.com/earendil-works/pi-mono/issues/2791
+ * Regression test for https://github.com/earendil-works/athena-agent/issues/2791
  *
  * fs.watch() returns an FSWatcher (EventEmitter). If the watcher emits an
  * 'error' event after creation and no error handler is attached, Node.js
@@ -51,7 +55,7 @@ describe("issue #2791 fs.watch error event crashes process", () => {
 			`
 import { setTheme, stopThemeWatcher } from "${themeModulePath}";
 
-process.env.PI_CODING_AGENT_DIR = "${agentDir}";
+process.env.ATHENA_CODING_AGENT_DIR = "${agentDir}";
 
 setTheme("custom-test", true);
 
@@ -87,10 +91,10 @@ process.exit(0);
 		let stderr = "";
 		let exitCode: number;
 		try {
-			_stdout = execFileSync(process.execPath, [scriptPath], {
+			_stdout = execFileSync("npx", ["tsx", scriptPath], {
 				timeout: 10000,
 				encoding: "utf-8",
-				env: { ...process.env, PI_CODING_AGENT_DIR: agentDir },
+				env: { ...process.env, ATHENA_CODING_AGENT_DIR: agentDir },
 				stdio: ["pipe", "pipe", "pipe"],
 			});
 			exitCode = 0;

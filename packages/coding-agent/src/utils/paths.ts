@@ -100,6 +100,10 @@ export function formatPathRelativeToCwdOrAbsolute(filePath: string, cwd: string)
 	return (getCwdRelativePath(absolutePath, cwd) ?? absolutePath).split(sep).join("/");
 }
 
+export function toPosixPath(p: string): string {
+	return p.split(sep).join("/");
+}
+
 export function markPathIgnoredByCloudSync(path: string): void {
 	const attrs =
 		process.platform === "darwin"

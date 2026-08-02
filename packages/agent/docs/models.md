@@ -1,6 +1,6 @@
 # Models architecture
 
-This document describes the target design for the next `pi-ai` model/provider refactor. It describes the desired shape, not the current implementation. It is intended to be complete enough to start implementing from a fresh session.
+This document describes the target design for the next `@athena/ai` model/provider refactor. It describes the desired shape, not the current implementation. It is intended to be complete enough to start implementing from a fresh session.
 
 Goals:
 
@@ -14,7 +14,7 @@ Goals:
 - `models.json` and extensions layer by wrapping providers, not by mutating provider internals ad hoc.
 - Old global APIs survive only in an explicit, temporary `/compat` entrypoint.
 
-Non-goals for the immediate `pi-ai` pass:
+Non-goals for the immediate `@athena/ai` pass:
 
 - Do not migrate coding-agent `ModelRegistry` yet.
 - Do not keep the stream/API registry inside `Models`.
@@ -87,8 +87,8 @@ Provider, API, and compat entrypoints are explicit subpath exports.
 Minimal provider usage:
 
 ```ts
-import { createModels } from "@earendil-works/pi-ai";
-import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
+import { createModels } from "@athena/ai";
+import { openaiProvider } from "@athena/ai/providers/openai";
 
 const models = createModels();
 models.setProvider(openaiProvider());
@@ -110,7 +110,7 @@ models.setProvider(openrouterProvider());
 All built-ins, explicitly heavy metadata entrypoint:
 
 ```ts
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
+import { builtinModels } from "@athena/ai/providers/all";
 
 const models = builtinModels();
 ```
@@ -471,7 +471,7 @@ export type Credential = ApiKeyCredential | OAuthCredential;
 
 ### Credential store
 
-The app injects storage; `pi-ai` ships an in-memory default. Keyed by provider id, one credential per provider:
+The app injects storage; `@athena/ai` ships an in-memory default. Keyed by provider id, one credential per provider:
 
 ```ts
 export interface CredentialStore {
@@ -700,7 +700,7 @@ Built-in provider factories use `createProvider()` internally. models.json custo
 
 ## Compat entrypoint
 
-`@earendil-works/pi-ai/compat` preserves the old global API surface until the coding-agent migration deletes it. New code never imports it.
+`@athena/ai/compat` preserves the old global API surface until the coding-agent migration deletes it. New code never imports it.
 
 Old semantics being preserved: global `stream()` can still dispatch by `model.api` through the legacy api-registry for custom providers, mutated models, and tests/extensions that override a built-in API implementation.
 
@@ -710,9 +710,9 @@ Old semantics being preserved: global `stream()` can still dispatch by `model.ap
 - Re-exports the per-API lazy stream wrappers (incl. `setBedrockProviderModule`), `env-api-keys.ts`, and the image-generation registry/catalogs; none of these stay on the root barrel.
 - `export * from "./index.ts"`: compat is a strict superset of the core entrypoint, so consumers switch a file's import path wholesale without symbol surgery.
 
-coding-agent (and the interim agent package) switch imports of these symbols from `@earendil-works/pi-ai` to `@earendil-works/pi-ai/compat` (import-path-only change) and are otherwise untouched until the ModelManager migration.
+coding-agent (and the interim agent package) switch imports of these symbols from `@athena/ai` to `@athena/ai/compat` (import-path-only change) and are otherwise untouched until the ModelManager migration.
 
-Extension grace period: the coding-agent extension loader (jiti aliases + Bun `virtualModules`) resolves the `@earendil-works/pi-ai` ROOT specifier to the compat entrypoint. Existing user extensions using the old global API (`complete`, `getModel`, `registerApiProvider`, ...) keep working at runtime without changes; they break only when compat is removed at the ModelManager migration, with a migration guide in the changelog. Typechecking is the nudge: editors resolve the root to the slim core types, so extension sources that typecheck must import old globals from `/compat` — which is what the repo example extensions demonstrate.
+Extension grace period: the coding-agent extension loader (jiti aliases + Bun `virtualModules`) resolves the `@athena/ai` ROOT specifier to the compat entrypoint. Existing user extensions using the old global API (`complete`, `getModel`, `registerApiProvider`, ...) keep working at runtime without changes; they break only when compat is removed at the ModelManager migration, with a migration guide in the changelog. Typechecking is the nudge: editors resolve the root to the slim core types, so extension sources that typecheck must import old globals from `/compat` — which is what the repo example extensions demonstrate.
 
 ## Builtin static helpers
 
@@ -732,7 +732,7 @@ Generated catalogs are split per provider (`providers/<id>.models.ts`) by updati
 
 Rules:
 
-1. Main `@earendil-works/pi-ai` import is core-only.
+1. Main `@athena/ai` import is core-only.
 2. Provider modules import their catalog, auth helpers, and lazy API wrappers only.
 3. Lazy API wrappers dynamically import real API implementations.
 4. Real API implementations import SDK dependencies.
@@ -789,73 +789,13 @@ coding-agent owns: `FileCredentialStore` + decorators replacing AuthStorage (see
 
 Current interim state:
 
-- `AgentHarness` already accepts a `Models` instance and uses it for turn streaming, compaction, and branch summaries.
-- coding-agent does not use `AgentHarness` yet; `AgentSession` still drives the low-level `Agent` with a `streamFn`.
-- coding-agent still uses legacy `AuthStorage` + `ModelRegistry` and imports old global pi-ai APIs through `@earendil-works/pi-ai/compat`.
-- The extension loader still aliases the pi-ai root to `/compat` as the runtime grace period for old extensions.
+- `AgentHarness` accepts a `Models` instance for turn streaming, compaction, and branch summaries.
+- coding-agent does not use `AgentHarness` yet; `AgentSession` drives the low-level `Agent` with a `streamFn`.
+- coding-agent uses legacy `AuthStorage` + `ModelRegistry` and imports `@athena/ai/compat`.
 
-## Implementation TODOs
+## Remaining work
 
-Check items off as they land. Keep this list current; it is the working state for resumed sessions.
-
-### Phase 1 — core types/runtime
-
-- [x] Rename `types.ts` `Provider` alias to `ProviderId`; fix call sites.
-- [x] Add `ApiOptionsMap` and `ApiStreamOptions<TApi>` to `types.ts` (type-only imports).
-- [x] New `models.ts`: `Provider<TApi>` interface, `hasApi()` guard, `ModelsError` + codes. Auth types live in `src/auth/types.ts` (`ProviderAuth` = `{ apiKey?, oauth? }`, credentials, `CredentialStore` (`read`/`modify`/`delete`, one credential per provider), `AuthResult`, `AuthContext`, `ModelAuth`, login callbacks), in-memory store in `src/auth/credential-store.ts`, default context in `src/auth/context.ts` (browser-safe node:fs trick), `lazyStream()` in `src/api/lazy.ts`.
-- [x] `Models`/`MutableModels`/`createModels({ credentials?, authContext? })` with provider map, sync `getModel(s)` (per-provider failure isolation), explicit async `refresh(provider?)`, `getAuth` (decision tree, double-checked locked refresh), `stream/complete/streamSimple/completeSimple` with per-field auth merge. Tests: `packages/ai/test/models-runtime.test.ts`.
-- [x] Keep metadata helpers: `calculateCost`, `getSupportedThinkingLevels`, `clampThinkingLevel`, `modelsAreEqual`.
-
-### Phase 2 — `src/api/`
-
-- [x] Move stream implementations from `src/providers/` to `src/api/`, renamed by API id (`anthropic.ts` -> `api/anthropic-messages.ts`, etc.).
-- [x] Normalize each implementation module to export exactly `stream` and `streamSimple`.
-- [x] Move shared helpers (`openai-responses-shared`, `google-shared`, `transform-messages`, `openai-prompt-cache`, `github-copilot-headers`, `cloudflare`, `simple-options`) to `src/api/`.
-- [x] Extract `lazyStream()`/`lazyApi()` into `src/api/lazy.ts`.
-- [x] Add `*.lazy.ts` wrappers per API; bedrock keeps node-only import trick and `setBedrockProviderModule()`.
-- [x] Delete `providers/register-builtins.ts`. Interim until Phase 5 compat: builtin api-registry registration lives in `stream.ts`; lazy API wrappers are exported from the root barrel.
-
-### Phase 3 — provider factories + catalogs
-
-- [x] Auth helpers in `src/auth/helpers.ts`: `envApiKeyAuth()` (with secret-prompt `login`), `lazyOAuth()`. OAuth flow loads go through `auth/oauth/load.ts` (bundler-opaque dynamic import); the `OAuthAuth` exports it references land in Phase 4.
-- [x] `createProvider()` in `models.ts` (single + mixed `api` map, dispatch on `model.api`, unknown api -> stream error).
-- [x] Per-provider factories under `src/providers/` for all built-in catalog providers; OAuth attached via `lazyOAuth()` (anthropic, openai-codex, github-copilot); ambient `ApiKeyAuth` for amazon-bedrock (AWS env/profile) and google-vertex (key or ADC+project+location).
-- [x] `providers/all.ts`: `builtinProviders()`, `builtinModels()`, `getBuiltinModel/getBuiltinModels/getBuiltinProviders` re-exports.
-- [x] Faux provider factory (`fauxProvider()` in `providers/faux.ts`) for tests; legacy `registerFauxProvider()` kept until compat dies.
-- [x] Split generated catalogs per provider via `scripts/generate-models.ts` (`providers/<id>.models.ts`); `models.generated.ts` becomes a generated aggregator.
-
-### Phase 4 — OAuth adaptation
-
-- [x] Built-in implementations live under `auth/oauth/` and implement `OAuthAuth` directly through `AuthInteraction.prompt()`/`notify()`. They are private provider implementations loaded lazily by provider factories.
-- [x] Callback-server flows race a `manual_code` prompt, aborted through `AuthPrompt.signal` once the flow settles. The public `oauth` subpath retains only coding-agent extension compatibility types.
-
-### Phase 5 — packaging
-
-- [x] `index.ts` core-only and side-effect free (no catalogs, no provider factories, no api-registry, no env-api-keys, no images, no OAuth, no compat). Typed catalog reads (`getBuiltin*`) implemented in `providers/all.ts`; `models.ts` no longer imports `models.generated.ts`.
-- [x] `compat.ts`: superset of index + old api-dispatch globals, deprecated `getModel/getModels/getProviders` aliases, lazy api wrappers + `setBedrockProviderModule`, `getEnvApiKey`, images. Registration side effect lives here (skip-if-present).
-- [x] Subpath exports map (`./compat`, `./providers/*`, `./api/*`); `sideEffects` array listing the effectful modules (`compat`, images registration) instead of `false`.
-- [x] Browser smoke (entry now imports old globals from `/compat`) + shrinkwrap checks green. Internal old-global imports switched to `/compat` already (42 files in agent/coding-agent/examples; vitest configs alias `/compat` to src; spawn-CLI tests resolve workspace dist, so `packages/ai` + `packages/agent` dists were rebuilt).
-
-### Phase 6 — AgentHarness
-
-- [x] `AgentHarnessOptions.models` required (`readonly models` on the harness); the harness stream path uses `models.streamSimple()`. `StreamFn` redefined structurally (no compat type dependency); `Models.streamSimple` satisfies it.
-- [x] Compaction/branch-summarization take the harness `Models` instance. `getApiKeyAndHeaders` is removed entirely — `Models` is the only auth path; per-request key resolution becomes provider auth on the collection. `compact()`/`generateSummary()`/`generateBranchSummary()` lose their explicit `apiKey`/`headers` parameters.
-- [x] Harness tests use `createModels()` + `fauxProvider()` with unique per-fake provider ids; no global api-registry state, no unregister bookkeeping.
-
-### Phase 7 — coding-agent bridge (minimal)
-
-- [x] Switch old-global imports to `@earendil-works/pi-ai/compat` (landed with Phase 5; compat is a superset so the switch was path-only). Extension loader resolves the pi-ai root to compat as the runtime grace period.
-- [x] Everything else originally sketched here is gated on coding-agent actually streaming through a `Models` instance — coding-agent's `AgentSession` drives the low-level `Agent` via `streamFn`, not the harness — and moved to Phase 9.
-
-### Phase 8 — wrap-up
-
-- [x] Update/add tests; run affected suites (tests landed with each phase; `./test.sh` green throughout).
-- [x] `packages/ai/CHANGELOG.md`: `### Breaking Changes` with migration guide (compat entrypoint, `Provider` -> `ProviderId`, api module moves) + `### Added` for the new Models/provider/auth API.
-- [x] `packages/coding-agent/CHANGELOG.md`: `### Changed` entry for extension authors — runtime unaffected (loader resolves the pi-ai root to compat), typecheck nudges to `/compat` or the new API; removal happens later with a migration guide.
-- [x] `packages/agent/CHANGELOG.md`: `### Breaking Changes` for required `AgentHarnessOptions.models`, compaction signature changes, structural `StreamFn`.
-- [x] `npm run check` clean.
-
-### Phase 9 — coding-agent on Models + CredentialStore (in scope)
+### Phase 9 — coding-agent on Models + CredentialStore
 
 coding-agent replaces AuthStorage and ModelRegistry's internals with `FileCredentialStore` + a `MutableModels` collection. AgentSession itself stays (AgentHarness adoption is pi 2.0); only its model/auth substrate swaps. Layering is strictly one-directional:
 
@@ -882,10 +822,10 @@ Decisions:
 
 Ordering for new sessions:
 
-1. [x] pi-ai rework first: `Provider.getModels()` sync + optional `refreshModels()`; `Models.getModels`/`getModel` sync, `Models.refresh(provider?)` async; `createProvider` takes `models` array + optional `refreshModels` fetcher (in-flight dedupe). Reverses Phase 1's async-listing decision — see "Provider model listing" for rationale (sync-or-async unions breed latent sync assumptions; async-only breaks sync consumer surfaces like extension `find`/`getAll`).
-2. [x] Cloudflare provider auth in pi-ai factories: Workers AI and AI Gateway validate their required account/gateway env/config and return resolved `baseUrl`, provider-scoped env, and header suppression/override metadata from provider auth.
+1. [x] ai package rework first: `Provider.getModels()` sync + optional `refreshModels()`; `Models.getModels`/`getModel` sync, `Models.refresh(provider?)` async; `createProvider` takes `models` array + optional `refreshModels` fetcher (in-flight dedupe). Reverses Phase 1's async-listing decision — see "Provider model listing" for rationale (sync-or-async unions breed latent sync assumptions; async-only breaks sync consumer surfaces like extension `find`/`getAll`).
+2. [x] Cloudflare provider auth in ai package factories: Workers AI and AI Gateway validate their required account/gateway env/config and return resolved `baseUrl`, provider-scoped env, and header suppression/override metadata from provider auth.
 3. [ ] Add `FileCredentialStore` in coding-agent.
-   - Implement the pi-ai `CredentialStore` interface as a self-contained `auth.json` store; do not depend on the old `AuthStorageBackend` abstraction, though its lock/retry semantics may be ported.
+   - Implement the ai package `CredentialStore` interface as a self-contained `auth.json` store; do not depend on the old `AuthStorageBackend` abstraction, though its lock/retry semantics may be ported.
    - Preserve the existing file format. `ApiKeyCredential` uses `{ type: "api_key", key?, env? }`, matching today's `auth.json`; do not translate `env` into metadata or rewrite discriminators.
    - Resolve `$ENV`/`!command` in stored API-key `key` and `env` values out of the box using an injected execution/config environment. `$ENV` lookup should come from that environment, and `!command` should run through the shared shell execution path rather than direct `execSync`.
    - Persist raw config values; resolved credentials returned for auth use must be copies and must not rewrite `$ENV`/`!command` strings unless a caller explicitly stores new values.
@@ -913,7 +853,7 @@ Ordering for new sessions:
    - Keep only the legacy callback/credential declarations required by coding-agent `ProviderConfig.oauth`.
    - `login` maps legacy callbacks/events to `AuthInteraction.prompt()`/`notify()`.
    - `refreshToken` maps to `refresh`; `getApiKey` maps to `toAuth`.
-   - Preserve the type-only pi-ai `oauth` barrel and extension-loader aliases.
+   - Preserve the type-only ai `oauth` barrel and extension-loader aliases.
 8. [ ] Rebuild coding-agent `ModelRegistry` over `MutableModels`.
    - It owns a `MutableModels` instance built from decorated built-ins + models.json custom providers + extension providers.
    - `getAll()`, `find()`, and `getAvailable()` remain sync compatibility methods over last-known model lists and fast configured-looking auth status. Do not break the extension-facing `modelRegistry` surface for these reads.

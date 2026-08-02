@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { build } from "esbuild";
 
-const outputPath = join(tmpdir(), "pi-browser-smoke.js");
-const agentTreeshakeOutputPath = join(tmpdir(), "pi-agent-treeshake-smoke.js");
-const errorLogPath = join(tmpdir(), "pi-browser-smoke-errors.log");
+const outputPath = join(tmpdir(), "athena-browser-smoke.js");
+const agentTreeshakeOutputPath = join(tmpdir(), "athena-agent-treeshake-smoke.js");
+const errorLogPath = join(tmpdir(), "athena-browser-smoke-errors.log");
 const generatedCatalogDataDir = join(process.cwd(), "packages/ai/src/providers/data");
 
 // Fresh checkouts do not materialize provider JSON until model data is hydrated.
@@ -20,6 +20,17 @@ const generatedCatalogDataPlugin = {
 		build.onLoad({ filter: /.*/, namespace: "empty-generated-model-catalog" }, () => ({
 			contents: "{}",
 			loader: "json",
+		}));
+	},
+};
+
+// Resolve workspace alias: the agent package is published as @athena/agent-core
+// but source files and tsconfig paths reference @athena/agent.
+const workspaceAliasPlugin = {
+	name: "workspace-alias",
+	setup(build) {
+		build.onResolve({ filter: /^@athena\/agent$/ }, () => ({
+			path: resolve("packages/agent/dist/index.js"),
 		}));
 	},
 };
@@ -48,7 +59,7 @@ try {
 		format: "esm",
 		logLevel: "silent",
 		outfile: outputPath,
-		plugins: [generatedCatalogDataPlugin],
+		plugins: [generatedCatalogDataPlugin, workspaceAliasPlugin],
 	});
 
 	const agentTreeshakeBuild = await build({
@@ -59,7 +70,7 @@ try {
 		logLevel: "silent",
 		metafile: true,
 		outfile: agentTreeshakeOutputPath,
-		plugins: [generatedCatalogDataPlugin],
+		plugins: [generatedCatalogDataPlugin, workspaceAliasPlugin],
 		write: false,
 	});
 	const inputs = agentTreeshakeBuild.metafile.inputs;

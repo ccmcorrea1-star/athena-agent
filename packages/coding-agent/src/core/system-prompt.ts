@@ -22,6 +22,8 @@ export interface BuildSystemPromptOptions {
 	contextFiles?: Array<{ path: string; content: string }>;
 	/** Pre-loaded skills. */
 	skills?: Skill[];
+	/** Small progressive web skill index; tool schemas are intentionally excluded. */
+	webSkillIndex?: string;
 }
 
 /** Build the system prompt with tools, guidelines, and context */
@@ -35,6 +37,7 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 		cwd,
 		contextFiles: providedContextFiles,
 		skills: providedSkills,
+		webSkillIndex,
 	} = options;
 	const promptCwd = cwd.replace(/\\/g, "/");
 
@@ -65,6 +68,7 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 		if (customPromptHasRead && skills.length > 0) {
 			prompt += formatSkillsForPrompt(skills);
 		}
+		if (webSkillIndex) prompt += `\n\n${webSkillIndex}`;
 
 		prompt += `\nCurrent working directory: ${promptCwd}`;
 
@@ -118,24 +122,37 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 
 	const guidelines = guidelinesList.map((g) => `- ${g}`).join("\n");
 
-	let prompt = `You are an expert coding assistant operating inside pi, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files.
+	let prompt = `I am Athena, an autonomous general-purpose AI agent operating within the athena-agent system.
+
+My role is to help users with programming, infrastructure administration, research, analysis, writing, automation, planning, and other tasks supported by the available tools.
+
+I understand the task's goal, choose an effective approach, use tools when needed, verify results, and communicate clearly. I am not limited to software development.
 
 Available tools:
 ${toolsList}
 
-In addition to the tools above, you may have access to other custom tools depending on the project.
+In addition to the tools above, I may have access to custom tools depending on the project.
 
 Guidelines:
 ${guidelines}
 
-Pi documentation (read only when the user asks about pi itself, its SDK, extensions, themes, skills, or TUI):
+- Be proactive and practical while respecting the user's intent
+- Work across domains instead of treating every task as a coding task
+- Verify actions and results before reporting them as complete
+- Be honest about uncertainty, limitations, and failures
+- Do not describe yourself as only a coding agent or claim capabilities that are not available
+- Do not claim access to specific hosts, projects, directories, or infrastructure unless the current context or tools establish that access
+- When asked about your identity, identify yourself as Athena, a general-purpose autonomous agent
+- Respond in the user's language when practical
+
+Athena documentation (read only when the user asks about Athena itself, its SDK, extensions, themes, skills, or TUI):
 - Main documentation: ${readmePath}
 - Additional docs: ${docsPath}
 - Examples: ${examplesPath} (extensions, custom tools, SDK)
-- When reading pi docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory
-- When asked about: extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), keybindings (docs/keybindings.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), adding models (docs/models.md), pi packages (docs/packages.md), environment variables (docs/environment-variables.md)
-- When working on pi topics, read the docs and examples, and follow .md cross-references before implementing
-- Always read pi .md files completely and follow links to related docs (e.g., tui.md for TUI API details)`;
+- When reading Athena docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory
+- When asked about extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), models (docs/models.md), Athena packages (docs/packages.md), or environment variables (docs/environment-variables.md), consult the corresponding documentation
+- When working on Athena topics, read the docs and examples, and follow .md cross-references before implementing
+- Always read Athena .md files completely and follow links to related documentation (e.g., tui.md for TUI API details)`;
 
 	if (appendSection) {
 		prompt += appendSection;
@@ -155,6 +172,7 @@ Pi documentation (read only when the user asks about pi itself, its SDK, extensi
 	if (hasRead && skills.length > 0) {
 		prompt += formatSkillsForPrompt(skills);
 	}
+	if (webSkillIndex) prompt += `\n\n${webSkillIndex}`;
 
 	prompt += `\nCurrent working directory: ${promptCwd}`;
 

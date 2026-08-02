@@ -14,18 +14,18 @@ import {
 	type ServerHello,
 	type ServerHelloError,
 	type ServerMessage,
-} from "@earendil-works/pi-protocol";
+} from "@athena/protocol";
 import {
 	type ByteConnection,
 	type ByteConnectionHandler,
 	type ConnectionState,
 	isTerminalConnection,
 } from "./connection.ts";
-import { PiServerError } from "./errors.ts";
-import type { PiServerListener } from "./listener.ts";
+import { AthenaServerError } from "./errors.ts";
+import type { AthenaServerListener } from "./listener.ts";
 import { LiveSessionManager } from "./sessions.ts";
 import { ServerSnapshotPublisher } from "./snapshots.ts";
-import type { PiServerOptions, PiSessionBackend } from "./types.ts";
+import type { AthenaServerOptions, AthenaSessionBackend } from "./types.ts";
 
 const DEFAULT_HANDSHAKE_TIMEOUT_MS = 5_000;
 const MAX_UINT32 = 0xffff_ffff;
@@ -35,10 +35,10 @@ function tokenDigest(token: string): Buffer {
 	return createHash("sha256").update(token, "utf8").digest();
 }
 
-export class PiServer {
+export class AthenaServer {
 	readonly id: string;
 
-	private readonly listeners: readonly PiServerListener[];
+	private readonly listeners: readonly AthenaServerListener[];
 	private readonly expectedTokenDigest: Buffer;
 	private readonly maxFrameLength: number;
 	private readonly handshakeTimeoutMs: number;
@@ -51,7 +51,7 @@ export class PiServer {
 	private startPromise?: Promise<this>;
 	private started = false;
 
-	constructor(backend: PiSessionBackend, options: PiServerOptions) {
+	constructor(backend: AthenaSessionBackend, options: AthenaServerOptions) {
 		const resolved = resolveOptions(options);
 		this.listeners = options.listeners;
 		this.id = options.serverId ?? randomUUID();
@@ -84,15 +84,15 @@ export class PiServer {
 	}
 
 	start(): Promise<this> {
-		if (this.started) return Promise.reject(new Error("PiServer is already started"));
-		if (this.startPromise) return Promise.reject(new Error("PiServer is already starting"));
-		if (this.closing) return Promise.reject(new Error("PiServer is closing or closed"));
+		if (this.started) return Promise.reject(new Error("AthenaServer is already started"));
+		if (this.startPromise) return Promise.reject(new Error("AthenaServer is already starting"));
+		if (this.closing) return Promise.reject(new Error("AthenaServer is closing or closed"));
 		this.startPromise = this.startInternal();
 		return this.startPromise;
 	}
 
 	private async startInternal(): Promise<this> {
-		const started: PiServerListener[] = [];
+		const started: AthenaServerListener[] = [];
 		try {
 			for (const listener of this.listeners) {
 				await listener.start((connection) => this.accept(connection));
@@ -358,7 +358,7 @@ export class PiServer {
 	}
 
 	private toProtocolError(error: unknown): ProtocolError {
-		if (error instanceof PiServerError) {
+		if (error instanceof AthenaServerError) {
 			return error.details === undefined
 				? { code: error.code, message: error.message }
 				: { code: error.code, message: error.message, details: error.details };
@@ -379,13 +379,13 @@ export class PiServer {
 	}
 }
 
-function resolveOptions(options: PiServerOptions): { maxFrameLength: number; handshakeTimeoutMs: number } {
-	if (!Array.isArray(options.listeners)) throw new TypeError("PiServer listeners must be an array");
-	if (!options.token) throw new TypeError("PiServer token must not be empty");
-	if (options.serverId === "") throw new TypeError("PiServer serverId must not be empty");
+function resolveOptions(options: AthenaServerOptions): { maxFrameLength: number; handshakeTimeoutMs: number } {
+	if (!Array.isArray(options.listeners)) throw new TypeError("AthenaServer listeners must be an array");
+	if (!options.token) throw new TypeError("AthenaServer token must not be empty");
+	if (options.serverId === "") throw new TypeError("AthenaServer serverId must not be empty");
 	const maxFrameLength = options.maxFrameLength ?? DEFAULT_MAX_FRAME_LENGTH;
 	if (!Number.isSafeInteger(maxFrameLength) || maxFrameLength <= 0 || maxFrameLength > MAX_UINT32) {
-		throw new TypeError(`PiServer maxFrameLength must be an integer between 1 and ${MAX_UINT32}`);
+		throw new TypeError(`AthenaServer maxFrameLength must be an integer between 1 and ${MAX_UINT32}`);
 	}
 	const handshakeTimeoutMs = options.handshakeTimeoutMs ?? DEFAULT_HANDSHAKE_TIMEOUT_MS;
 	if (
@@ -393,7 +393,7 @@ function resolveOptions(options: PiServerOptions): { maxFrameLength: number; han
 		handshakeTimeoutMs <= 0 ||
 		handshakeTimeoutMs > MAX_TIMER_DELAY_MS
 	) {
-		throw new TypeError(`PiServer handshakeTimeoutMs must be an integer between 1 and ${MAX_TIMER_DELAY_MS}`);
+		throw new TypeError(`AthenaServer handshakeTimeoutMs must be an integer between 1 and ${MAX_TIMER_DELAY_MS}`);
 	}
 	return { maxFrameLength, handshakeTimeoutMs };
 }

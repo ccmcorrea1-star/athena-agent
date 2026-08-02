@@ -4,13 +4,13 @@ import {
 	PROTOCOL_VERSION,
 	type ServerSnapshot,
 	type SessionSummary,
-} from "@earendil-works/pi-protocol";
+} from "@athena/protocol";
 import type { ConnectionState } from "./connection.ts";
-import type { PiSessionBackend } from "./types.ts";
+import type { AthenaSessionBackend } from "./types.ts";
 
 interface ServerSnapshotPublisherOptions {
 	serverId: string;
-	backend: PiSessionBackend;
+	backend: AthenaSessionBackend;
 	connections: Set<ConnectionState>;
 	isClosing: () => boolean;
 	listSessions: (connection?: ConnectionState) => Promise<SessionSummary[]>;

@@ -1,8 +1,8 @@
-import type { ClientMessageDecoder } from "@earendil-works/pi-protocol";
+import type { ClientMessageDecoder } from "@athena/protocol";
 
 import type { MaybePromise } from "./types.ts";
 
-/** A connected, ordered byte sink used by PiServer's transport-neutral domain core. */
+/** A connected, ordered byte sink used by AthenaServer's transport-neutral domain core. */
 export interface ByteConnection {
 	readonly closed: boolean;
 	send(chunk: Uint8Array): Promise<void>;

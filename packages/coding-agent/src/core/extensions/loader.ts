@@ -7,13 +7,13 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as _bundledPiAgentCore from "@earendil-works/pi-agent-core";
-import type { Provider } from "@earendil-works/pi-ai";
-import * as _bundledPiAiCompat from "@earendil-works/pi-ai/compat";
-import * as _bundledPiAiOauth from "@earendil-works/pi-ai/oauth";
-import * as _bundledPiAiProviders from "@earendil-works/pi-ai/providers/all";
-import type { KeyId } from "@earendil-works/pi-tui";
-import * as _bundledPiTui from "@earendil-works/pi-tui";
+import * as _bundledAthenaAgentCore from "@athena/agent-core";
+import type { Provider } from "@athena/ai";
+import * as _bundledAthenaAiCompat from "@athena/ai/compat";
+import * as _bundledAthenaAiOauth from "@athena/ai/oauth";
+import * as _bundledAthenaAiProviders from "@athena/ai/providers/all";
+import type { KeyId } from "@athena/tui";
+import * as _bundledAthenaTui from "@athena/tui";
 import { createJiti } from "jiti/static";
 // Static imports of packages that extensions may use.
 // These MUST be static so Bun bundles them into the compiled binary.
@@ -23,13 +23,13 @@ import * as _bundledTypeboxCompile from "typebox/compile";
 import * as _bundledTypeboxValue from "typebox/value";
 import { CONFIG_DIR_NAME, getAgentDir, isBunBinary } from "../../config.ts";
 // NOTE: This import works because loader.ts exports are NOT re-exported from index.ts,
-// avoiding a circular dependency. Extensions can import from @earendil-works/pi-coding-agent.
-import * as _bundledPiCodingAgent from "../../index.ts";
+// avoiding a circular dependency. Extensions can import from @athena/coding-agent.
+import * as _bundledAthenaCodingAgent from "../../index.ts";
 import { resolvePath } from "../../utils/paths.ts";
+import { readAthenaManifest } from "../athena-manifest.ts";
 import { createEventBus, type EventBus } from "../event-bus.ts";
 import type { ExecOptions } from "../exec.ts";
 import { execCommand } from "../exec.ts";
-import { readPiManifest } from "../pi-manifest.ts";
 import { createSyntheticSourceInfo } from "../source-info.ts";
 import { time } from "../timings.ts";
 import type {
@@ -54,23 +54,23 @@ const VIRTUAL_MODULES: Record<string, unknown> = {
 	"@sinclair/typebox": _bundledTypebox,
 	"@sinclair/typebox/compile": _bundledTypeboxCompile,
 	"@sinclair/typebox/value": _bundledTypeboxValue,
-	"@earendil-works/pi-agent-core": _bundledPiAgentCore,
-	"@earendil-works/pi-tui": _bundledPiTui,
-	// Extensions resolve the pi-ai root to the compat entrypoint (a strict
+	"@athena/agent-core": _bundledAthenaAgentCore,
+	"@athena/tui": _bundledAthenaTui,
+	// Extensions resolve the athena-ai root to the compat entrypoint (a strict
 	// superset of the core entrypoint): existing extensions using the old
 	// global API keep working at runtime until compat is removed.
-	"@earendil-works/pi-ai": _bundledPiAiCompat,
-	"@earendil-works/pi-ai/compat": _bundledPiAiCompat,
-	"@earendil-works/pi-ai/oauth": _bundledPiAiOauth,
-	"@earendil-works/pi-ai/providers/all": _bundledPiAiProviders,
-	"@earendil-works/pi-coding-agent": _bundledPiCodingAgent,
-	"@mariozechner/pi-agent-core": _bundledPiAgentCore,
-	"@mariozechner/pi-tui": _bundledPiTui,
-	"@mariozechner/pi-ai": _bundledPiAiCompat,
-	"@mariozechner/pi-ai/compat": _bundledPiAiCompat,
-	"@mariozechner/pi-ai/oauth": _bundledPiAiOauth,
-	"@mariozechner/pi-ai/providers/all": _bundledPiAiProviders,
-	"@mariozechner/pi-coding-agent": _bundledPiCodingAgent,
+	"@athena/ai": _bundledAthenaAiCompat,
+	"@athena/ai/compat": _bundledAthenaAiCompat,
+	"@athena/ai/oauth": _bundledAthenaAiOauth,
+	"@athena/ai/providers/all": _bundledAthenaAiProviders,
+	"@athena/coding-agent": _bundledAthenaCodingAgent,
+	"@mariozechner/pi-agent-core": _bundledAthenaAgentCore,
+	"@mariozechner/pi-tui": _bundledAthenaTui,
+	"@mariozechner/pi-ai": _bundledAthenaAiCompat,
+	"@mariozechner/pi-ai/compat": _bundledAthenaAiCompat,
+	"@mariozechner/pi-ai/oauth": _bundledAthenaAiOauth,
+	"@mariozechner/pi-ai/providers/all": _bundledAthenaAiProviders,
+	"@mariozechner/pi-coding-agent": _bundledAthenaCodingAgent,
 };
 
 const require = createRequire(import.meta.url);
@@ -102,34 +102,31 @@ function getAliases(): Record<string, string> {
 		return fileURLToPath(import.meta.resolve(specifier));
 	};
 
-	const piCodingAgentEntry = packageIndex;
-	const piAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@earendil-works/pi-agent-core");
-	const piTuiEntry = resolveWorkspaceOrImport("tui/dist/index.js", "@earendil-works/pi-tui");
-	// Extensions resolve the pi-ai root to the compat entrypoint (a strict
+	const athenaCodingAgentEntry = packageIndex;
+	const athenaAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@athena/agent-core");
+	const athenaTuiEntry = resolveWorkspaceOrImport("tui/dist/index.js", "@athena/tui");
+	// Extensions resolve the athena-ai root to the compat entrypoint (a strict
 	// superset of the core entrypoint): existing extensions using the old
 	// global API keep working at runtime until compat is removed.
-	const piAiCompatEntry = resolveWorkspaceOrImport("ai/dist/compat.js", "@earendil-works/pi-ai/compat");
-	const piAiOauthEntry = resolveWorkspaceOrImport("ai/dist/oauth.js", "@earendil-works/pi-ai/oauth");
-	const piAiProvidersEntry = resolveWorkspaceOrImport(
-		"ai/dist/providers/all.js",
-		"@earendil-works/pi-ai/providers/all",
-	);
+	const athenaAiCompatEntry = resolveWorkspaceOrImport("ai/dist/compat.js", "@athena/ai/compat");
+	const athenaAiOauthEntry = resolveWorkspaceOrImport("ai/dist/oauth.js", "@athena/ai/oauth");
+	const athenaAiProvidersEntry = resolveWorkspaceOrImport("ai/dist/providers/all.js", "@athena/ai/providers/all");
 
 	_aliases = {
-		"@earendil-works/pi-coding-agent": piCodingAgentEntry,
-		"@earendil-works/pi-agent-core": piAgentCoreEntry,
-		"@earendil-works/pi-tui": piTuiEntry,
-		"@earendil-works/pi-ai/providers/all": piAiProvidersEntry,
-		"@earendil-works/pi-ai/compat": piAiCompatEntry,
-		"@earendil-works/pi-ai/oauth": piAiOauthEntry,
-		"@earendil-works/pi-ai": piAiCompatEntry,
-		"@mariozechner/pi-coding-agent": piCodingAgentEntry,
-		"@mariozechner/pi-agent-core": piAgentCoreEntry,
-		"@mariozechner/pi-tui": piTuiEntry,
-		"@mariozechner/pi-ai/providers/all": piAiProvidersEntry,
-		"@mariozechner/pi-ai/compat": piAiCompatEntry,
-		"@mariozechner/pi-ai/oauth": piAiOauthEntry,
-		"@mariozechner/pi-ai": piAiCompatEntry,
+		"@athena/coding-agent": athenaCodingAgentEntry,
+		"@athena/agent-core": athenaAgentCoreEntry,
+		"@athena/tui": athenaTuiEntry,
+		"@athena/ai/providers/all": athenaAiProvidersEntry,
+		"@athena/ai/compat": athenaAiCompatEntry,
+		"@athena/ai/oauth": athenaAiOauthEntry,
+		"@athena/ai": athenaAiCompatEntry,
+		"@mariozechner/pi-coding-agent": athenaCodingAgentEntry,
+		"@mariozechner/pi-agent-core": athenaAgentCoreEntry,
+		"@mariozechner/pi-tui": athenaTuiEntry,
+		"@mariozechner/pi-ai/providers/all": athenaAiProvidersEntry,
+		"@mariozechner/pi-ai/compat": athenaAiCompatEntry,
+		"@mariozechner/pi-ai/oauth": athenaAiOauthEntry,
+		"@mariozechner/pi-ai": athenaAiCompatEntry,
 		typebox: typeboxEntry,
 		"typebox/compile": typeboxCompileEntry,
 		"typebox/value": typeboxValueEntry,
@@ -578,7 +575,7 @@ function isExtensionFile(name: string): boolean {
  * Resolve extension entry points from a directory.
  *
  * Checks for:
- * 1. package.json with "pi.extensions" field -> returns declared paths
+ * 1. package.json with "athena.extensions" field -> returns declared paths
  * 2. index.ts or index.js -> returns the index file
  *
  * Returns resolved paths or null if no entry points found.
@@ -587,7 +584,7 @@ function resolveExtensionEntries(dir: string): string[] | null {
 	// Check for package.json with "pi" field first
 	const packageJsonPath = path.join(dir, "package.json");
 	if (fs.existsSync(packageJsonPath)) {
-		const manifest = readPiManifest(packageJsonPath);
+		const manifest = readAthenaManifest(packageJsonPath);
 		if (manifest?.extensions?.length) {
 			const entries: string[] = [];
 			for (const extPath of manifest.extensions) {
@@ -621,7 +618,7 @@ function resolveExtensionEntries(dir: string): string[] | null {
  * Discovery rules:
  * 1. Direct files: `extensions/*.ts` or `*.js` → load
  * 2. Subdirectory with index: `extensions/* /index.ts` or `index.js` → load
- * 3. Subdirectory with package.json: `extensions/* /package.json` with "pi" field → load what it declares
+ * 3. Subdirectory with package.json: `extensions/* /package.json` with "athena" field → load what it declares
  *
  * No recursion beyond one level. Complex packages must use package.json manifest.
  */
@@ -695,7 +692,7 @@ export async function discoverAndLoadExtensions(
 	for (const p of configuredPaths) {
 		const resolved = resolvePath(p, resolvedCwd, { normalizeUnicodeSpaces: true });
 		if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-			// Check for package.json with pi manifest or index.ts
+			// Check for package.json with athena manifest or index.ts
 			const entries = resolveExtensionEntries(resolved);
 			if (entries) {
 				addPaths(entries);

@@ -3,8 +3,8 @@ import type {
 	SessionEntryCursorOptions,
 	SessionReader,
 	SessionTreeEntry,
-} from "@earendil-works/pi-agent-core";
-import { SessionError, toError } from "@earendil-works/pi-agent-core";
+} from "@athena/agent-core";
+import { SessionError, toError } from "@athena/agent-core";
 import type { SqliteDatabase, SqliteSessionMetadata } from "../types.ts";
 import {
 	appendEntryToBranchCache,

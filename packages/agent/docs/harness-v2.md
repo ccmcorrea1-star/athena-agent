@@ -34,7 +34,7 @@ The harness executes runs against one session. The session holds four kinds of s
 ## Non-goals
 
 - **Exactly-once hook side effects.** State a hook hands to the harness is durable when the call resolves: queued messages, appended entries. Side effects a hook makes on its own are invisible to the harness: HTTP calls, file writes. Interrupted handlers are not re-run on resume. A hook that needs crash-safe external effects must be idempotent, for example keyed by operation id.
-- **Provider stream resumption.** Partial streams are never persisted. An interrupted streaming request is retried or abandoned. Deferred requests are different and in scope: the provider returns a handle at once and serves the result later (e.g. `background: true` on a Responses API, batch APIs). pi-ai returns an assistant message with stop reason `deferred` that carries the handle; it is persisted like any assistant message. Redeeming the handle appends a normal assistant message. Recovery sees the unredeemed handle and fetches instead of paying for a new request.
+- **Provider stream resumption.** Partial streams are never persisted. An interrupted streaming request is retried or abandoned. Deferred requests are different and in scope: the provider returns a handle at once and serves the result later (e.g. `background: true` on a Responses API, batch APIs). the ai package returns an assistant message with stop reason `deferred` that carries the handle; it is persisted like any assistant message. Redeeming the handle appends a normal assistant message. Recovery sees the unredeemed handle and fetches instead of paying for a new request.
 - **Multiple writers.** Two processes on one session are out of scope. The serving layer routes all traffic for a session to the process that holds its harness. Lanes cover the workloads that look like multi-writer: parallel threads over shared history.
 - **Replication.** A session lives in one place. Coordination-free sync of diverging copies is a different design. Parked; see open questions.
 
@@ -1690,7 +1690,7 @@ Notes:
 - `before_run_end` fires at every finish boundary actually reached, including a boundary re-reached after a crash. Handlers that must not double-fire keep their own durable marker.
 - One policy knob deferred to implementation: whether `resume()` waits inside `fetchDeferred` when the provider is not ready (`wait` option) or re-parks immediately.
 
-## 16. pi-ai: deferred requests
+## 16. Deferred requests (ai package)
 
 The provider-level interface the harness builds on. Everything is per-request; batch APIs can implement the same shape through a custom provider.
 
@@ -1761,7 +1761,7 @@ repo.create({ id?, parentSessionId? }): Promise<Session>;
 - Entries only. No records, no queues: a fork starts idle, every lane question answers "no open operation".
 - Lanes: `scope: "branch"` → the fork has only `main`, at the fork point. `scope: "tree"` → TBD: current proposal copies all lanes as-is.
 - Facts: `scope: "tree"` copies all; `scope: "branch"` copies the name always, labels only when their target entry was copied.
-- The fork point may be any message entry. A copy whose tip sits mid-tool-batch is still promptable: pi-ai's transformMessages inserts synthetic empty results for orphaned tool calls at request build time.
+- The fork point may be any message entry. A copy whose tip sits mid-tool-batch is still promptable: the ai package's transformMessages inserts synthetic empty results for orphaned tool calls at request build time.
 - The source is untouched; copying while it runs reads the committed prefix.
 - Linkage is `parentSessionId`, set by `fork()` and settable on `create()` — the basis for subagent parent/child tracking and export bundles.
 - A subagent tool derives its child session id deterministically from its invocation (`f(parentSessionId, toolCallId)`): a safe replay reattaches to the same child instead of spawning a twin, and the child stays discoverable from the parent even when a crash swallowed the tool result.
@@ -1774,17 +1774,17 @@ In-process diagnostics, separate from events (public observation) and hooks (con
 Span tree, aligned to the execution model; every span carries `lane` plus the ids public events carry (`runId`, `stepId`, `toolCallId`), so traces, events, and records correlate without translation:
 
 ```text
-pi.harness.run           runId, lane, recovery
-├─ pi.harness.step        stepId
-│  ├─ pi.harness.task      task, attempt
-│  │  └─ pi.ai.request      physical provider request(s)
-│  └─ pi.harness.tool      toolName, toolCallId, replay
-├─ pi.harness.checkpoint
-└─ pi.harness.hook         hook type
+athena.harness.run           runId, lane, recovery
+├─ athena.harness.step        stepId
+│  ├─ athena.harness.task      task, attempt
+│  │  └─ athena.ai.request      physical provider request(s)
+│  └─ athena.harness.tool      toolName, toolCallId, replay
+├─ athena.harness.checkpoint
+└─ athena.harness.hook         hook type
 
-pi.harness.compaction    manual operation; auto nests under its run
-pi.harness.navigation
-pi.harness.resume
+athena.harness.compaction    manual operation; auto nests under its run
+athena.harness.navigation
+athena.harness.resume
 pi.session.append        entry/record type, seq
 ```
 

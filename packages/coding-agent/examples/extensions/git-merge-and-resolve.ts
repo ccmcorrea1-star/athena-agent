@@ -8,13 +8,13 @@
  * with file, line range, and ours/theirs sections so it can resolve them.
  * Also re-sends unresolved conflicts from a previous incomplete merge.
  *
- * Start pi with this extension:
- *   pi -e ./examples/extensions/git-merge-and-resolve.ts
+ * Start athena with this extension:
+ *   athena -e ./examples/extensions/git-merge-and-resolve.ts
  */
 import { createReadStream } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@athena/coding-agent";
 
 interface ConflictBlock {
 	file: string;

@@ -9,12 +9,17 @@ import {
 	rmSync,
 	writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+
+// Use /tmp directly to avoid TMPDIR pointing inside the user's home directory.
+function tmpdir(): string {
+	return "/tmp";
+}
+
 import { afterEach, describe, expect, it } from "vitest";
 import { ENV_AGENT_DIR } from "../src/config.ts";
 
-const cliPath = resolve(__dirname, "../src/cli.ts");
+const cliPath = resolve(__dirname, "../dist/cli.js");
 const tempDirs: string[] = [];
 
 afterEach(() => {
@@ -78,7 +83,7 @@ async function runCli(
 			env: {
 				...process.env,
 				[ENV_AGENT_DIR]: dirs.agentDir,
-				PI_OFFLINE: "1",
+				ATHENA_OFFLINE: "1",
 				TSX_TSCONFIG_PATH: resolve(__dirname, "../../../tsconfig.json"),
 			},
 			stdio: ["ignore", "ignore", "pipe"],

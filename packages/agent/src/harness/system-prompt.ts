@@ -1,4 +1,5 @@
 import type { Skill } from "./types.ts";
+import { escapeXml } from "./utils/xml.ts";
 
 export function formatSkillsForSystemPrompt(skills: Skill[]): string {
 	const visibleSkills = skills.filter((skill) => !skill.disableModelInvocation);
@@ -22,13 +23,4 @@ export function formatSkillsForSystemPrompt(skills: Skill[]): string {
 
 	lines.push("</available_skills>");
 	return lines.join("\n");
-}
-
-function escapeXml(value: string): string {
-	return value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&apos;");
 }

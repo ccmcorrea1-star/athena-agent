@@ -1,13 +1,13 @@
 /**
- * Syncs pi theme with macOS system appearance (dark/light mode).
+ * Syncs athena theme with macOS system appearance (dark/light mode).
  *
  * Usage:
- *   pi -e examples/extensions/mac-system-theme.ts
+ *   athena -e examples/extensions/mac-system-theme.ts
  */
 
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI } from "@athena/coding-agent";
 
 const execAsync = promisify(exec);
 

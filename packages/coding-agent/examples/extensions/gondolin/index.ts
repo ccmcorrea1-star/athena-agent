@@ -1,7 +1,7 @@
 /**
  * Gondolin Tool Routing Example
  *
- * Runs pi's built-in tools inside a local Gondolin micro-VM. The host working
+ * Runs athena's built-in tools inside a local Gondolin micro-VM. The host working
  * directory is mounted at /workspace in the guest. File changes under
  * /workspace write through to the host; other guest filesystem changes are
  * isolated to the VM.
@@ -12,7 +12,7 @@
  *
  * Usage:
  *   cd /path/to/project
- *   pi -e /path/to/pi/packages/coding-agent/examples/extensions/gondolin
+ *   athena -e /path/to/athena/packages/coding-agent/examples/extensions/gondolin
  *
  * Requirements:
  *   - Node.js >= 23.6.0 for @earendil-works/gondolin
@@ -20,8 +20,7 @@
  */
 
 import path from "node:path";
-import { RealFSProvider, VM } from "@earendil-works/gondolin";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@athena/coding-agent";
 import {
 	type BashOperations,
 	createBashTool,
@@ -42,7 +41,8 @@ import {
 	truncateHead,
 	truncateLine,
 	type WriteOperations,
-} from "@earendil-works/pi-coding-agent";
+} from "@athena/coding-agent";
+import { RealFSProvider, VM } from "@earendil-works/gondolin";
 
 const GUEST_WORKSPACE = "/workspace";
 const DEFAULT_GREP_LIMIT = 100;

@@ -1,7 +1,7 @@
 {
-	"name": "@earendil-works/pi-server",
+	"name": "@athena/server",
 	"version": "0.83.0",
-	"description": "experimental server package for pi",
+	"description": "experimental server package for athena",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -40,23 +40,23 @@
 		"prepublishOnly": "npm run clean && npm run build"
 	},
 	"keywords": [
-		"pi",
+		"athena",
 		"server"
 	],
 	"author": "Earendil Works",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
+		"url": "git+https://github.com/earendil-works/athena-agent.git",
 		"directory": "packages/server"
 	},
 	"engines": {
 		"node": ">=22.19.0"
 	},
 	"dependencies": {
-		"@earendil-works/pi-ai": "^0.83.0",
-		"@earendil-works/pi-coding-agent": "^0.83.0",
-		"@earendil-works/pi-protocol": "^0.83.0"
+		"@athena/ai": "0.83.0",
+		"@athena/coding-agent": "0.83.0",
+		"@athena/protocol": "0.83.0"
 	},
 	"devDependencies": {
 		"shx": "0.4.0",

@@ -1,5 +1,5 @@
-import type { Component, Terminal } from "@earendil-works/pi-tui";
-import { Container, isViewportTUI, Text } from "@earendil-works/pi-tui";
+import type { Component, Terminal } from "@athena/tui";
+import { Container, isViewportTUI, Text } from "@athena/tui";
 import { describe, expect, it, vi } from "vitest";
 import { VirtualTerminal } from "../../tui/test/virtual-terminal.ts";
 import { createInteractiveTui, InteractiveMode } from "../src/modes/interactive/interactive-mode.ts";

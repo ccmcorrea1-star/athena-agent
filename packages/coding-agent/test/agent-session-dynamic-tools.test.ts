@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getModel } from "@earendil-works/pi-ai/compat";
+import { getModel } from "@athena/ai/compat";
 import { Type } from "typebox";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DefaultResourceLoader } from "../src/core/resource-loader.ts";
@@ -74,24 +74,24 @@ describe("AgentSession dynamic tool registration", () => {
 
 		const bashTool = session.agent.state.tools.find((tool) => tool.name === "bash")!;
 		expect(session.systemPrompt).toContain(
-			"Inspect PI_* environment variables for current model and session details.",
+			"Inspect ATHENA_* environment variables for current model and session details.",
 		);
 		await bashTool.execute("bash-env", { command: "printf ok" });
 		expect(sessionEnv).toMatchObject({
-			PI_SESSION_ID: session.sessionId,
-			PI_SESSION_FILE: session.sessionFile,
-			PI_PROVIDER: model.provider,
-			PI_MODEL: model.id,
-			PI_REASONING_LEVEL: session.thinkingLevel,
+			ATHENA_SESSION_ID: session.sessionId,
+			ATHENA_SESSION_FILE: session.sessionFile,
+			ATHENA_PROVIDER: model.provider,
+			ATHENA_MODEL: model.id,
+			ATHENA_REASONING_LEVEL: session.thinkingLevel,
 		});
 
 		const optedOutBashTool = session.agent.state.tools.find((tool) => tool.name === "bash_without_session_env")!;
 		await optedOutBashTool.execute("bash-no-env", { command: "printf ok" });
-		expect(optedOutEnv).not.toHaveProperty("PI_SESSION_ID");
-		expect(optedOutEnv).not.toHaveProperty("PI_SESSION_FILE");
-		expect(optedOutEnv).not.toHaveProperty("PI_PROVIDER");
-		expect(optedOutEnv).not.toHaveProperty("PI_MODEL");
-		expect(optedOutEnv).not.toHaveProperty("PI_REASONING_LEVEL");
+		expect(optedOutEnv).not.toHaveProperty("ATHENA_SESSION_ID");
+		expect(optedOutEnv).not.toHaveProperty("ATHENA_SESSION_FILE");
+		expect(optedOutEnv).not.toHaveProperty("ATHENA_PROVIDER");
+		expect(optedOutEnv).not.toHaveProperty("ATHENA_MODEL");
+		expect(optedOutEnv).not.toHaveProperty("ATHENA_REASONING_LEVEL");
 
 		session.dispose();
 	});

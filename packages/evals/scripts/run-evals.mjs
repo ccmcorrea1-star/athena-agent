@@ -54,10 +54,10 @@ if (hasCliModelSelection) {
 		process.exit(1);
 	}
 } else {
-	provider = process.env.PI_PROVIDER?.trim() || undefined;
-	model = process.env.PI_MODEL?.trim() || undefined;
+	provider = process.env.ATHENA_PROVIDER?.trim() || undefined;
+	model = process.env.ATHENA_MODEL?.trim() || undefined;
 	if (Boolean(provider) !== Boolean(model)) {
-		console.error("Default model selection requires both PI_PROVIDER and PI_MODEL.");
+		console.error("Default model selection requires both ATHENA_PROVIDER and ATHENA_MODEL.");
 		process.exit(1);
 	}
 }
@@ -74,11 +74,11 @@ const childEnvironment = {
 	PI_EVAL_ARTIFACT_DIR: artifactDirectory,
 };
 if (provider && model) {
-	childEnvironment.PI_PROVIDER = provider;
-	childEnvironment.PI_MODEL = model;
+	childEnvironment.ATHENA_PROVIDER = provider;
+	childEnvironment.ATHENA_MODEL = model;
 } else {
-	delete childEnvironment.PI_PROVIDER;
-	delete childEnvironment.PI_MODEL;
+	delete childEnvironment.ATHENA_PROVIDER;
+	delete childEnvironment.ATHENA_MODEL;
 }
 const result = spawnSync(
 	process.execPath,

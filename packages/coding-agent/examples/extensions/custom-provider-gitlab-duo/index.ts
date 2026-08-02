@@ -2,27 +2,26 @@
  * GitLab Duo Provider Extension
  *
  * Provides access to GitLab Duo AI models (Claude and GPT) through GitLab's AI Gateway.
- * Delegates to pi-ai's built-in Anthropic and OpenAI streaming implementations.
+ * Delegates to athena-ai's built-in Anthropic and OpenAI streaming implementations.
  *
  * Usage:
- *   pi -e ./packages/coding-agent/examples/extensions/custom-provider-gitlab-duo
+ *   athena -e ./packages/coding-agent/examples/extensions/custom-provider-gitlab-duo
  *   # Then /login gitlab-duo, or set GITLAB_TOKEN=glpat-...
  */
 
 import {
 	type Api,
 	type AssistantMessageEventStream,
-	anthropicMessagesApi,
 	type Context,
 	createAssistantMessageEventStream,
 	type Model,
 	type OAuthCredentials,
 	type OAuthLoginCallbacks,
-	openAIResponsesApi,
 	type SimpleStreamOptions,
 	type ThinkingLevelMap,
-} from "@earendil-works/pi-ai/compat";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+} from "@athena/ai";
+import { anthropicMessagesApi, openAIResponsesApi } from "@athena/ai/compat";
+import type { ExtensionAPI } from "@athena/coding-agent";
 
 // =============================================================================
 // Constants

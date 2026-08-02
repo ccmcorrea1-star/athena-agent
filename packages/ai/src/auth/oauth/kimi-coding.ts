@@ -7,6 +7,7 @@
  */
 
 import { getProviderEnvValue } from "../../utils/provider-env.ts";
+import { sleep } from "../../utils/sleep.ts";
 import type { AuthInteraction, OAuthAuth, OAuthCredential } from "../types.ts";
 import { pollOAuthDeviceCodeFlow } from "./device-code.ts";
 
@@ -204,10 +205,6 @@ async function pollForToken(
 			};
 		},
 	});
-}
-
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isRetryableRefreshFailure(response: Response): boolean {

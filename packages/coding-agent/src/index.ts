@@ -326,6 +326,47 @@ export {
 	type ProjectTrustStoreEntry,
 	type ProjectTrustUpdate,
 } from "./core/trust-manager.ts";
+export type {
+	BrowserAction,
+	WebBrowser,
+	WebBrowserBackend,
+	WebBrowserContext,
+	WebBrowserInstance,
+	WebBrowserPage,
+	WebBrowserTaskContext,
+	WebBrowserTaskInput,
+	WebBrowserTaskOutput,
+	WebBrowserTaskRunner,
+	WebCrawlInput,
+	WebCrawlOutput,
+	WebCrawlPage,
+	WebFetch,
+	WebFetchInput,
+	WebFetchOutput,
+	WebNavigateInput,
+	WebNavigateOutput,
+	WebPermission,
+	WebProviderOptions,
+	WebProviderResponse,
+	WebSearchInput,
+	WebSearchOutput,
+	WebSearchResult,
+	WebSkillIndex,
+	WebSkillRegistryOptions,
+	WebSkillSearchResult,
+	WebToolManifest,
+	WebToolName,
+} from "./core/web/index.ts";
+export * from "./core/web/index.ts";
+export {
+	assertAllowedDomain,
+	assertConfiguredEndpoint,
+	assertResponseSize,
+	assertSafeUrl,
+	createWebSkillRegistry,
+	WebError,
+	WebSkillRegistry,
+} from "./core/web/index.ts";
 // Main entry point
 export { type MainOptions, main } from "./main.ts";
 // Run modes for programmatic SDK usage

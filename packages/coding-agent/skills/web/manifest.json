@@ -1,0 +1,5 @@
+{
+  "name": "web",
+  "description": "Pesquisa, leitura, extração e navegação na internet.",
+  "tools": ["web.search", "web.fetch", "web.crawl", "web.navigate", "web.browser-task"]
+}

@@ -2,14 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server, type Socket } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-	ClientMessageDecoder,
-	encodeServerMessage,
-	PROTOCOL_VERSION,
-	type ServerSnapshot,
-} from "@earendil-works/pi-protocol";
+import { ClientMessageDecoder, encodeServerMessage, PROTOCOL_VERSION, type ServerSnapshot } from "@athena/protocol";
 import { describe, expect, test } from "vitest";
-import { PiClient } from "../src/index.ts";
+import { AthenaClient } from "../src/index.ts";
 import { createUnixTransportFactory } from "../src/unix.ts";
 
 const serverSnapshot: ServerSnapshot = {
@@ -40,13 +35,13 @@ async function closeServer(server: Server, sockets: Set<Socket>): Promise<void> 
 test("rejects invalid Unix transport options", () => {
 	expect(() => createUnixTransportFactory({ path: "" })).toThrow(/must not be empty/);
 	expect(() => createUnixTransportFactory({ path: `/tmp/${"x".repeat(512)}` })).toThrow(/too long/);
-	expect(() => createUnixTransportFactory({ path: "/tmp/pi.sock", maxPendingBytes: 0 })).toThrow(/positive/);
+	expect(() => createUnixTransportFactory({ path: "/tmp/athena.sock", maxPendingBytes: 0 })).toThrow(/positive/);
 });
 
 describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
-	test("PiClient exchanges fragmented framed messages over a real Unix socket", async () => {
-		const directory = await mkdtemp(join(tmpdir(), "pi-client-"));
-		const socketPath = join(directory, "pi.sock");
+	test("AthenaClient exchanges fragmented framed messages over a real Unix socket", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "athena-client-"));
+		const socketPath = join(directory, "athena.sock");
 		const sockets = new Set<Socket>();
 		const server = createServer((socket) => {
 			sockets.add(socket);
@@ -77,7 +72,7 @@ describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
 			});
 		});
 		await listen(server, socketPath);
-		const client = new PiClient({
+		const client = new AthenaClient({
 			token: "unix-secret",
 			transportFactory: createUnixTransportFactory({ path: socketPath }),
 		});
@@ -93,8 +88,8 @@ describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
 	});
 
 	test("bounds pending writes, preserves order, and reports remote end once", async () => {
-		const directory = await mkdtemp(join(tmpdir(), "pi-client-"));
-		const socketPath = join(directory, "pi.sock");
+		const directory = await mkdtemp(join(tmpdir(), "athena-client-"));
+		const socketPath = join(directory, "athena.sock");
 		const sockets = new Set<Socket>();
 		const first = new Uint8Array(2 * 1024 * 1024).fill(1);
 		const second = new Uint8Array(2 * 1024 * 1024).fill(2);
@@ -165,9 +160,9 @@ describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
 		}
 	});
 
-	test("PiClient rejects a truncated final frame from a real Unix socket", async () => {
-		const directory = await mkdtemp(join(tmpdir(), "pi-client-"));
-		const socketPath = join(directory, "pi.sock");
+	test("AthenaClient rejects a truncated final frame from a real Unix socket", async () => {
+		const directory = await mkdtemp(join(tmpdir(), "athena-client-"));
+		const socketPath = join(directory, "athena.sock");
 		const sockets = new Set<Socket>();
 		const server = createServer((socket) => {
 			sockets.add(socket);
@@ -191,7 +186,7 @@ describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
 			});
 		});
 		await listen(server, socketPath);
-		const client = new PiClient({
+		const client = new AthenaClient({
 			token: "unix-secret",
 			transportFactory: createUnixTransportFactory({ path: socketPath }),
 		});
@@ -208,7 +203,7 @@ describe.runIf(process.platform !== "win32")("Unix-domain sockets", () => {
 	});
 
 	test("rejects connection errors", async () => {
-		const directory = await mkdtemp(join(tmpdir(), "pi-client-"));
+		const directory = await mkdtemp(join(tmpdir(), "athena-client-"));
 		const missingPath = join(directory, "missing.sock");
 		try {
 			await expect(

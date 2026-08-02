@@ -7,13 +7,13 @@ import type {
 	SessionSummary,
 	ThinkingLevel,
 	TranscriptProgress,
-} from "@earendil-works/pi-protocol";
-import type { PiServerError } from "./errors.ts";
-import type { PiServerListener } from "./listener.ts";
+} from "@athena/protocol";
+import type { AthenaServerError } from "./errors.ts";
+import type { AthenaServerListener } from "./listener.ts";
 
-export interface PiServerOptions {
+export interface AthenaServerOptions {
 	token: string;
-	listeners: readonly PiServerListener[];
+	listeners: readonly AthenaServerListener[];
 	maxFrameLength?: number;
 	handshakeTimeoutMs?: number;
 	serverId?: string;
@@ -26,7 +26,7 @@ export type PromptInput = Omit<Extract<Command, { command: "prompt" }>, "command
 export type SteerInput = Omit<Extract<Command, { command: "steer" }>, "command" | "sessionId">;
 
 export interface CreateSessionOptions {
-	/** A collision-resistant ID assigned by PiServer. The backend must persist this exact ID. */
+	/** A collision-resistant ID assigned by AthenaServer. The backend must persist this exact ID. */
 	id: string;
 	cwd?: string;
 	name?: string;
@@ -34,13 +34,13 @@ export interface CreateSessionOptions {
 	thinkingLevel?: ThinkingLevel;
 }
 
-export type PiSessionRuntimeEvent =
+export type AthenaSessionRuntimeEvent =
 	| { type: "snapshot" }
 	| { type: "progress"; progress: TranscriptProgress }
-	| { type: "error"; error: PiServerError };
+	| { type: "error"; error: AthenaServerError };
 
 /** One acquired durable session. Conflicting operations must reject rather than queue. */
-export interface PiSessionRuntime {
+export interface AthenaSessionRuntime {
 	snapshot(): MaybePromise<SessionSnapshot>;
 	getPhase(): SessionPhase;
 	prompt(input: PromptInput): Promise<void>;
@@ -48,18 +48,18 @@ export interface PiSessionRuntime {
 	abort(): Promise<void>;
 	setModel(model: ModelRef): Promise<void>;
 	setThinking(thinkingLevel: ThinkingLevel): Promise<void>;
-	subscribe(listener: (event: PiSessionRuntimeEvent) => void): () => void;
+	subscribe(listener: (event: AthenaSessionRuntimeEvent) => void): () => void;
 	dispose(): Promise<void>;
 }
 
 /** Durable storage and exclusively acquired runtime boundary. */
-export interface PiSessionBackend {
+export interface AthenaSessionBackend {
 	listSessions(): Promise<SessionSummary[]>;
 	listModels(): Promise<ModelMetadata[]>;
-	createSession(options: CreateSessionOptions): Promise<PiSessionRuntime>;
-	openSession(sessionId: string): Promise<PiSessionRuntime>;
+	createSession(options: CreateSessionOptions): Promise<AthenaSessionRuntime>;
+	openSession(sessionId: string): Promise<AthenaSessionRuntime>;
 }
 
-export type SessionRuntime = PiSessionRuntime;
-export type SessionBackend = PiSessionBackend;
-export type SessionRuntimeEvent = PiSessionRuntimeEvent;
+export type SessionRuntime = AthenaSessionRuntime;
+export type SessionBackend = AthenaSessionBackend;
+export type SessionRuntimeEvent = AthenaSessionRuntimeEvent;

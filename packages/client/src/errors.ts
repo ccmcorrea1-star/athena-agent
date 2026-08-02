@@ -1,47 +1,47 @@
-import type { JsonValue, ProtocolError, ProtocolErrorCode } from "@earendil-works/pi-protocol";
+import type { JsonValue, ProtocolError, ProtocolErrorCode } from "@athena/protocol";
 
-export class PiServerError extends Error {
+export class AthenaServerError extends Error {
 	readonly code: ProtocolErrorCode;
 	readonly details: JsonValue | undefined;
 
 	constructor(error: ProtocolError) {
 		super(error.message);
-		this.name = "PiServerError";
+		this.name = "AthenaServerError";
 		this.code = error.code;
 		this.details = error.details;
 	}
 }
 
-export class PiDisconnectedError extends Error {
-	constructor(message = "Pi client is disconnected") {
+export class AthenaDisconnectedError extends Error {
+	constructor(message = "Athena client is disconnected") {
 		super(message);
-		this.name = "PiDisconnectedError";
+		this.name = "AthenaDisconnectedError";
 	}
 }
 
-export class PiClientDisposedError extends Error {
+export class AthenaClientDisposedError extends Error {
 	constructor() {
-		super("Pi client is disposed");
-		this.name = "PiClientDisposedError";
+		super("Athena client is disposed");
+		this.name = "AthenaClientDisposedError";
 	}
 }
 
-export class PiSessionOwnershipError extends Error {
+export class AthenaSessionOwnershipError extends Error {
 	readonly sessionId: string;
 
 	constructor(sessionId: string, message: string) {
 		super(message);
-		this.name = "PiSessionOwnershipError";
+		this.name = "AthenaSessionOwnershipError";
 		this.sessionId = sessionId;
 	}
 }
 
-export class PiSessionDetachedError extends Error {
+export class AthenaSessionDetachedError extends Error {
 	readonly sessionId: string;
 
 	constructor(sessionId: string) {
 		super(`Session ${sessionId} is not attached`);
-		this.name = "PiSessionDetachedError";
+		this.name = "AthenaSessionDetachedError";
 		this.sessionId = sessionId;
 	}
 }
@@ -50,7 +50,7 @@ export function toError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error));
 }
 
-export function toDisconnectedError(error: unknown): PiDisconnectedError {
+export function toDisconnectedError(error: unknown): AthenaDisconnectedError {
 	const cause = toError(error);
-	return cause instanceof PiDisconnectedError ? cause : new PiDisconnectedError(cause.message);
+	return cause instanceof AthenaDisconnectedError ? cause : new AthenaDisconnectedError(cause.message);
 }

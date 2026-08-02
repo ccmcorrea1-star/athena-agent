@@ -1,4 +1,4 @@
-import { ProcessTerminal, setKeybindings, type TUI, TuiMainScreen } from "@earendil-works/pi-tui";
+import { ProcessTerminal, setKeybindings, type TUI, TuiMainScreen } from "@athena/tui";
 import { existsSync } from "fs";
 import { APP_NAME, CONFIG_DIR_NAME, ENV_AGENT_DIR, getAgentDir, getSettingsPath, PACKAGE_NAME } from "../config.ts";
 import { areExperimentalFeaturesEnabled } from "../core/experimental.ts";
@@ -23,9 +23,9 @@ import {
 	type Theme,
 } from "../modes/interactive/theme/theme.ts";
 
-const OFFICIAL_PACKAGE_NAME = "@earendil-works/pi-coding-agent";
-const OFFICIAL_APP_NAME = "pi";
-const OFFICIAL_CONFIG_DIR_NAME = ".pi";
+const OFFICIAL_PACKAGE_NAME = "@athena/coding-agent";
+const OFFICIAL_APP_NAME = "athena";
+const OFFICIAL_CONFIG_DIR_NAME = ".athena";
 
 interface DistributionMetadata {
 	packageName: string;

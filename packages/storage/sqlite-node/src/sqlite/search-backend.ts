@@ -1,5 +1,5 @@
-import type { SessionSearch, SessionSearchHit, SessionSearchOptions } from "@earendil-works/pi-agent-core";
-import { getFileSystemResultOrThrow } from "@earendil-works/pi-agent-core";
+import type { SessionSearch, SessionSearchHit, SessionSearchOptions } from "@athena/agent-core";
+import { getFileSystemResultOrThrow } from "@athena/agent-core";
 import { applyMigrations } from "./migrations.ts";
 import { rowToMetadata, type SessionRow } from "./storage/sessions.ts";
 import type { SqliteDatabase, SqliteDatabaseFactory, SqliteSessionMetadata, SqliteSessionStoreEnv } from "./types.ts";

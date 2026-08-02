@@ -1,4 +1,4 @@
-import type { CredentialStore } from "@earendil-works/pi-ai";
+import type { CredentialStore } from "@athena/ai";
 import { ModelRegistry } from "../src/core/model-registry.ts";
 import { ModelRuntime } from "../src/core/model-runtime.ts";
 

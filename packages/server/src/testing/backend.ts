@@ -6,13 +6,13 @@ import type {
 	SessionSummary,
 	ThinkingLevel,
 	TranscriptProgress,
-} from "@earendil-works/pi-protocol";
-import { PiServerError } from "../errors.ts";
+} from "@athena/protocol";
+import { AthenaServerError } from "../errors.ts";
 import type {
+	AthenaSessionBackend,
+	AthenaSessionRuntime,
+	AthenaSessionRuntimeEvent,
 	CreateSessionOptions,
-	PiSessionBackend,
-	PiSessionRuntime,
-	PiSessionRuntimeEvent,
 	PromptInput,
 } from "../types.ts";
 
@@ -50,13 +50,13 @@ interface StoredSession {
 	snapshot: SessionSnapshot;
 }
 
-export class TestSessionRuntime implements PiSessionRuntime {
+export class TestSessionRuntime implements AthenaSessionRuntime {
 	readonly disposed = new Deferred<void>();
 	disposeCount = 0;
 	readonly steers: PromptInput[] = [];
 	private readonly stored: StoredSession;
 	private readonly onDispose: () => void;
-	private readonly listeners = new Set<(event: PiSessionRuntimeEvent) => void>();
+	private readonly listeners = new Set<(event: AthenaSessionRuntimeEvent) => void>();
 	private pendingPrompt?: { input: PromptInput; done: Deferred<"complete" | "aborted"> };
 
 	constructor(stored: StoredSession, onDispose: () => void) {
@@ -73,7 +73,7 @@ export class TestSessionRuntime implements PiSessionRuntime {
 	}
 
 	async prompt(input: PromptInput): Promise<void> {
-		if (this.getPhase() !== "idle") throw new PiServerError("busy", "A prompt is already running");
+		if (this.getPhase() !== "idle") throw new AthenaServerError("busy", "A prompt is already running");
 		const done = new Deferred<"complete" | "aborted">();
 		this.pendingPrompt = { input, done };
 		this.update({
@@ -117,7 +117,7 @@ export class TestSessionRuntime implements PiSessionRuntime {
 	}
 
 	async steer(input: PromptInput): Promise<void> {
-		if (this.getPhase() === "idle") throw new PiServerError("busy", "There is no active prompt to steer");
+		if (this.getPhase() === "idle") throw new AthenaServerError("busy", "There is no active prompt to steer");
 		this.steers.push(input);
 		this.update({
 			queuedSteerCount: this.stored.snapshot.queuedSteerCount + 1,
@@ -134,21 +134,21 @@ export class TestSessionRuntime implements PiSessionRuntime {
 	}
 
 	async abort(): Promise<void> {
-		if (!this.pendingPrompt) throw new PiServerError("busy", "There is no active prompt to abort");
+		if (!this.pendingPrompt) throw new AthenaServerError("busy", "There is no active prompt to abort");
 		this.pendingPrompt.done.resolve("aborted");
 	}
 
 	async setModel(model: ModelRef): Promise<void> {
-		if (this.getPhase() !== "idle") throw new PiServerError("busy", "Session is busy");
+		if (this.getPhase() !== "idle") throw new AthenaServerError("busy", "Session is busy");
 		this.update({ model });
 	}
 
 	async setThinking(thinkingLevel: ThinkingLevel): Promise<void> {
-		if (this.getPhase() !== "idle") throw new PiServerError("busy", "Session is busy");
+		if (this.getPhase() !== "idle") throw new AthenaServerError("busy", "Session is busy");
 		this.update({ thinkingLevel });
 	}
 
-	subscribe(listener: (event: PiSessionRuntimeEvent) => void): () => void {
+	subscribe(listener: (event: AthenaSessionRuntimeEvent) => void): () => void {
 		this.listeners.add(listener);
 		return () => this.listeners.delete(listener);
 	}
@@ -172,7 +172,7 @@ export class TestSessionRuntime implements PiSessionRuntime {
 		for (const listener of this.listeners) listener({ type: "progress", progress });
 	}
 
-	emitError(error: PiServerError): void {
+	emitError(error: AthenaServerError): void {
 		for (const listener of this.listeners) listener({ type: "error", error });
 	}
 
@@ -196,7 +196,7 @@ interface ListDelay {
 	release: Deferred<void>;
 }
 
-export class TestSessionBackend implements PiSessionBackend {
+export class TestSessionBackend implements AthenaSessionBackend {
 	readonly sessions = new Map<string, StoredSession>();
 	readonly runtimes = new Map<string, TestSessionRuntime[]>();
 	readonly locked = new Set<string>();
@@ -228,16 +228,16 @@ export class TestSessionBackend implements PiSessionBackend {
 		return [TEST_MODEL];
 	}
 
-	async createSession(options: CreateSessionOptions): Promise<PiSessionRuntime> {
+	async createSession(options: CreateSessionOptions): Promise<AthenaSessionRuntime> {
 		this.lastCreatedId = options.id;
-		if (this.sessions.has(options.id)) throw new PiServerError("session_locked", "Session already exists");
+		if (this.sessions.has(options.id)) throw new AthenaServerError("session_locked", "Session already exists");
 		this.seed(options.id, options.name, options.cwd, options.model, options.thinkingLevel);
 		return this.acquire(options.id);
 	}
 
-	async openSession(sessionId: string): Promise<PiSessionRuntime> {
-		if (!this.sessions.has(sessionId)) throw new PiServerError("not_found", `Unknown session: ${sessionId}`);
-		if (this.locked.has(sessionId)) throw new PiServerError("session_locked", `Session is locked: ${sessionId}`);
+	async openSession(sessionId: string): Promise<AthenaSessionRuntime> {
+		if (!this.sessions.has(sessionId)) throw new AthenaServerError("not_found", `Unknown session: ${sessionId}`);
+		if (this.locked.has(sessionId)) throw new AthenaServerError("session_locked", `Session is locked: ${sessionId}`);
 		return this.acquire(sessionId);
 	}
 

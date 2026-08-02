@@ -1,4 +1,5 @@
 import type { AnthropicOptions } from "./api/anthropic-messages.ts";
+import type { AthenaMessagesOptions } from "./api/athena-messages.ts";
 import type { AzureOpenAIResponsesOptions } from "./api/azure-openai-responses.ts";
 import type { BedrockOptions } from "./api/bedrock-converse-stream.ts";
 import type { GoogleOptions } from "./api/google-generative-ai.ts";
@@ -7,7 +8,6 @@ import type { MistralOptions } from "./api/mistral-conversations.ts";
 import type { OpenAICodexResponsesOptions } from "./api/openai-codex-responses.ts";
 import type { OpenAICompletionsOptions } from "./api/openai-completions.ts";
 import type { OpenAIResponsesOptions } from "./api/openai-responses.ts";
-import type { PiMessagesOptions } from "./api/pi-messages.ts";
 import type { AssistantMessageDiagnostic } from "./utils/diagnostics.ts";
 import type { AssistantMessageEventStream } from "./utils/event-stream.ts";
 
@@ -23,6 +23,10 @@ export type KnownApi =
 	| "bedrock-converse-stream"
 	| "google-generative-ai"
 	| "google-vertex"
+	// Wire protocol identifier for the athena-messages API. Named "pi-messages"
+	// for historical reasons; used by the Radius gateway and user-facing
+	// models.json custom providers. Do NOT rename to "athena-messages" — it
+	// would break backward compatibility with external services.
 	| "pi-messages";
 
 export type Api = KnownApi | (string & {});
@@ -214,7 +218,7 @@ export interface ApiOptionsMap {
 	"google-vertex": GoogleVertexOptions;
 	"mistral-conversations": MistralOptions;
 	"bedrock-converse-stream": BedrockOptions;
-	"pi-messages": PiMessagesOptions;
+	"pi-messages": AthenaMessagesOptions;
 }
 
 /**

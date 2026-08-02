@@ -25,6 +25,7 @@ import type { Skill } from "./skills.ts";
 import { loadSkills } from "./skills.ts";
 import { createSourceInfo, type SourceInfo } from "./source-info.ts";
 import { resetTimings } from "./timings.ts";
+import { createWebSkillRegistry, type WebSkillRegistry } from "./web/index.ts";
 
 export interface ResourceExtensionPaths {
 	skillPaths?: Array<{ path: string; metadata: PathMetadata }>;
@@ -39,6 +40,8 @@ export interface ResourceLoaderReloadOptions {
 export interface ResourceLoader {
 	getExtensions(): LoadExtensionsResult;
 	getSkills(): { skills: Skill[]; diagnostics: ResourceDiagnostic[] };
+	/** Progressive web skill registry. Tool manifests and documentation are loaded on demand. */
+	getWebSkillRegistry?: () => WebSkillRegistry;
 	getPrompts(): { prompts: PromptTemplate[]; diagnostics: ResourceDiagnostic[] };
 	getThemes(): { themes: Theme[]; diagnostics: ResourceDiagnostic[] };
 	getAgentsFiles(): { agentsFiles: Array<{ path: string; content: string }> };
@@ -249,6 +252,7 @@ export class DefaultResourceLoader implements ResourceLoader {
 	private lastPromptPaths: string[];
 	private lastThemePaths: string[];
 	private loaded: boolean;
+	private webSkillRegistry: WebSkillRegistry;
 
 	constructor(options: DefaultResourceLoaderOptions) {
 		this.cwd = resolvePath(options.cwd);
@@ -298,6 +302,7 @@ export class DefaultResourceLoader implements ResourceLoader {
 		this.lastPromptPaths = [];
 		this.lastThemePaths = [];
 		this.loaded = false;
+		this.webSkillRegistry = createWebSkillRegistry();
 	}
 
 	getExtensions(): LoadExtensionsResult {
@@ -306,6 +311,10 @@ export class DefaultResourceLoader implements ResourceLoader {
 
 	getSkills(): { skills: Skill[]; diagnostics: ResourceDiagnostic[] } {
 		return { skills: this.skills, diagnostics: this.skillDiagnostics };
+	}
+
+	getWebSkillRegistry(): WebSkillRegistry {
+		return this.webSkillRegistry;
 	}
 
 	getPrompts(): { prompts: PromptTemplate[]; diagnostics: ResourceDiagnostic[] } {

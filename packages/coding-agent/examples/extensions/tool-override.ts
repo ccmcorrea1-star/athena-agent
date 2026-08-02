@@ -5,7 +5,7 @@
  * This is useful for:
  * - Adding logging or auditing to tool calls
  * - Implementing access control or sandboxing
- * - Routing tool calls to remote systems (e.g., pi-ssh-remote)
+ * - Routing tool calls to remote systems (e.g., athena-ssh-remote)
  * - Modifying tool behavior for specific workflows
  *
  * This example overrides the `read` tool to:
@@ -17,11 +17,11 @@
  * is used automatically (syntax highlighting, line numbers, truncation warnings).
  *
  * Usage:
- *   pi -e ./tool-override.ts
+ *   athena -e ./tool-override.ts
  */
 
-import type { TextContent } from "@earendil-works/pi-ai";
-import { type ExtensionAPI, getAgentDir, withFileMutationQueue } from "@earendil-works/pi-coding-agent";
+import type { TextContent } from "@athena/ai";
+import { type ExtensionAPI, getAgentDir, withFileMutationQueue } from "@athena/coding-agent";
 import { constants, readFileSync } from "fs";
 import { access, appendFile, readFile } from "fs/promises";
 import { join, resolve } from "path";

@@ -1,5 +1,5 @@
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
-import { SessionError } from "@earendil-works/pi-agent-core";
+import type { SessionTreeEntry } from "@athena/agent-core";
+import { SessionError } from "@athena/agent-core";
 export function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }

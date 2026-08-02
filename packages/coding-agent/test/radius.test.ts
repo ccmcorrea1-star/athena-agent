@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { InMemoryModelsStore } from "@earendil-works/pi-ai";
+import { InMemoryModelsStore } from "@athena/ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthStorage } from "../src/core/auth-storage.ts";
 import { ModelRuntime } from "../src/core/model-runtime.ts";
@@ -39,7 +39,7 @@ let tempDir: string;
 
 beforeEach(() => {
 	allowNetwork();
-	tempDir = join(tmpdir(), `pi-test-radius-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+	tempDir = join(tmpdir(), `athena-test-radius-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 	mkdirSync(tempDir, { recursive: true });
 });
 
@@ -117,7 +117,7 @@ describe("Radius provider", () => {
 		});
 
 		expect(runtime.getModels(RADIUS_PROVIDER_ID)).toEqual([]);
-		expect(fetchSpy.mock.calls.some(([url]) => String(url).includes("radius.pi.dev/v1/config"))).toBe(false);
+		expect(fetchSpy.mock.calls.some(([url]) => String(url).includes("radius.athena.dev/v1/config"))).toBe(false);
 	});
 
 	it("supports custom Radius gateways from models.json", async () => {

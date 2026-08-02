@@ -1,6 +1,6 @@
-# @earendil-works/pi-protocol
+# @athena/protocol
 
-Runtime-neutral schemas, types, CBOR encoding, and byte-stream framing for the experimental pi protocol.
+Runtime-neutral schemas, types, CBOR encoding, and byte-stream framing for the experimental athena protocol.
 
 Protocol version `2` uses binary messages with this wire layout:
 
@@ -19,7 +19,7 @@ import {
   createServerMessageDecoder,
   encodeClientMessage,
   type ClientHello,
-} from "@earendil-works/pi-protocol";
+} from "@athena/protocol";
 
 const hello: ClientHello = {
   type: "hello",

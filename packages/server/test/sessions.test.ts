@@ -1,9 +1,9 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelMetadata, SessionSnapshot, TranscriptProgress } from "@earendil-works/pi-protocol";
+import type { ModelMetadata, SessionSnapshot, TranscriptProgress } from "@athena/protocol";
 import { afterEach, describe, expect, test } from "vitest";
-import type { CreateSessionOptions, PiServer, PiSessionRuntime } from "../src/index.ts";
+import type { AthenaServer, AthenaSessionRuntime, CreateSessionOptions } from "../src/index.ts";
 import {
 	connectUnixTestClient,
 	Deferred,
@@ -41,7 +41,7 @@ class OrderedSnapshotBackend extends MemoryBackend {
 	}
 }
 
-const servers = new Set<PiServer>();
+const servers = new Set<AthenaServer>();
 const clients = new Set<Client>();
 const tempDirectories = new Set<string>();
 
@@ -58,7 +58,7 @@ async function startServer(backend = new MemoryBackend(), options: Partial<UnixS
 	return { server, backend };
 }
 
-async function connect(server: PiServer): Promise<Client> {
+async function connect(server: AthenaServer): Promise<Client> {
 	const client = await connectUnixTestClient(server.addresses[0]!);
 	clients.add(client);
 	return client;
@@ -79,7 +79,7 @@ afterEach(async () => {
 	tempDirectories.clear();
 });
 
-describe("PiServer Unix integration", () => {
+describe("AthenaServer Unix integration", () => {
 	test("serializes server snapshot revisions", async () => {
 		const backend = new OrderedSnapshotBackend();
 		const { server } = await startServer(backend);
@@ -361,7 +361,7 @@ describe("PiServer Unix integration", () => {
 
 	test("rejects and disposes a backend runtime with the wrong server-assigned ID", async () => {
 		class WrongIdBackend extends MemoryBackend {
-			override async createSession(options: CreateSessionOptions): Promise<PiSessionRuntime> {
+			override async createSession(options: CreateSessionOptions): Promise<AthenaSessionRuntime> {
 				return super.createSession({ ...options, id: "wrong-id" });
 			}
 		}

@@ -4,13 +4,14 @@
  * Run with: npx tsx test/streaming-render-debug.ts
  */
 
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import { ProcessTerminal, type TUI, TuiMainScreen } from "@earendil-works/pi-tui";
+import type { AssistantMessage } from "@athena/ai";
+import { ProcessTerminal, type TUI, TuiMainScreen } from "@athena/tui";
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { AssistantMessageComponent } from "../src/modes/interactive/components/assistant-message.ts";
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";
+import { sleep } from "../src/utils/sleep.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,10 +36,6 @@ if (!thinkingContent || thinkingContent.type !== "thinking") {
 
 const fullThinkingText = thinkingContent.thinking;
 const fullTextContent = textContent && textContent.type === "text" ? textContent.text : "";
-
-async function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function main() {
 	const terminal = new ProcessTerminal();
